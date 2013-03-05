@@ -6,32 +6,47 @@
     {{ form.source_f.errors }}
     {{ form.source_f }}
   </div>
+</td>
+
+
+<td class="translate-definition terminology" dir="{{ source_language.get_direction }}">
   <!-- Add description button -->
-  <a class="collapse left"><i class="icon-comment-add"
-      title="{% trans "Description..." %}"></i></a>
+  <a class="collapse left"><i class="icon-comment-add" title="{% trans "Term definition..." %}"></i></a>
+  {% if form.developer_comment.value %} &nbsp; {{ form.developer_comment.value }}{% endif %}
+  <!-- TODO always show (without having to click on the image), and when clicking on the image then hide the definition and show the textarea for editing the definition. But only admin can edit?? -->
   <div class="translate-term-original collapsethis tiny clear">{{ form.developer_comment }}</div>
 </td>
+
+
 <td colspan="1" rowspan="1" class="translate-translation terminology">
   <!-- Additional information button -->
-  {% if unit.translator_comment or unit.locations %}
-  <a class="collapse tiny left"><i class="icon-information"
-      title="{% trans "Details..." %}"></i></a>
+  {% if unit.translator_comment or unit.locations %}<!-- TODO where the hell unit comes from???? --><!-- TODO is this necessary? --><!-- TODO I am not sure yet, but translator comments may be used to add another extracted term translation possitilities. -->
+  <a class="collapse tiny left"><i class="icon-information" title="{% trans "Details..." %}"></i></a>
   {% endif %}
+
+  <!-- Term translation(s) -->
   <div id="trans{{unit.index}}" class="translate-term-translation" dir="{% locale_dir %}">
-    <!-- Translation -->
-    <div dir="{{ language.get_direction }}" lang="{{ language.code }}" class="translation-text">{{ unit.target|fancy_highlight }}</div>
+    <div dir="{{ language.get_direction }}" lang="{{ language.code }}" class="translation-text">
+      {{ form.target_f.errors }}
+      {{ form.target_f }}
+    </div>
   </div>
-  {% if unit.getcontext %}
-  <div class="translate-context">
-    {{ unit.getcontext }}
-  </div>
-  {% endif %}
-  <div class="collapsethis tiny" lang="{{ LANGUAGE_CODE }}">
-    {% if unit.translator_comment %}
-    <div title="{% trans "Translator Comments" %}" class="translator-comments tiny" dir="{{ language.dir }}" lang="{{ language.code }}"><i class="icon-comment-user"></i> {{ unit.translator_comment }}</div>
-    {% endif %}
-    {% if unit.locations %}
-    <div class="translate-locations" lang="en" dir="ltr">{{ unit.locations }}</div>
-    {% endif %}
-  </div>
+
+<!--  {% if unit.getcontext %}-->
+<!--  <div class="translate-context">-->
+<!--    {{ unit.getcontext }}--><!-- TODO where the hell unit comes from???? --><!-- TODO is this necessary? -->
+<!--  </div>-->
+<!--  {% endif %}-->
+
+  <!-- Translator comments -->
+<!--  <div class="collapsethis tiny" lang="{{ LANGUAGE_CODE }}">-->
+<!--    {% if unit.translator_comment %}--><!-- TODO where the hell unit comes from???? -->
+<!--    <div title="{% trans "Translator Comments" %}" class="translator-comments tiny" dir="{{ language.dir }}" lang="{{ language.code }}">-->
+<!--      <i class="icon-comment-user"></i> {{ unit.translator_comment }}--><!-- TODO where the hell unit comes from???? --><!-- TODO is this necessary? -->
+<!--    </div>-->
+<!--    {% endif %}-->
+<!--    {% if unit.locations %}--><!-- TODO where the hell unit comes from???? -->
+<!--    <div class="translate-locations" lang="en" dir="ltr">{{ unit.locations }}</div>--><!-- TODO where the hell unit comes from???? --><!-- TODO is this necessary? -->
+<!--    {% endif %}-->
+<!--  </div>-->
 </td>

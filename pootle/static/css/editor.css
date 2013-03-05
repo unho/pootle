@@ -230,9 +230,15 @@ table.translate-table td
 }
 
 th.translate-original,
+th.translate-definition,
 th.translate-translation
 {
-    width: 50%;
+    width: 30%;
+}
+
+th.DELETE
+{
+    width: 10%;
 }
 
 tr.edit-row

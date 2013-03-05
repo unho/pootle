@@ -124,10 +124,8 @@ def manage_store(request, template_vars, language, term_store):
     # XXX: Review this
     # HACKISH: Django won't allow excluding form fields already defined in
     # the parent class, manually extra fields.
-    del(unit_form_class.base_fields['target_f'])
     del(unit_form_class.base_fields['id'])
     del(unit_form_class.base_fields['state'])
-    del(unit_form_class.declared_fields['target_f'])
     del(unit_form_class.declared_fields['id'])
     del(unit_form_class.declared_fields['state'])
 
@@ -137,6 +135,17 @@ def manage_store(request, template_vars, language, term_store):
         store = forms.ModelChoiceField(queryset=qs, initial=term_store.pk,
                                        widget=forms.HiddenInput)
         index = forms.IntegerField(required=False, widget=forms.HiddenInput)
+
+#        class Meta:
+#            widgets = {'target_f': forms.Textarea(attrs={'cols': 20, 'rows': 1})}
+#            widgets = {'target_f': forms.TextInput(attrs={'size':'20'})}
+
+        def __init__(self, *args, **kwargs):
+            super(TermUnitForm, self).__init__(*args, **kwargs)
+            self.fields['target_f'].widget.attrs['cols'] = 20
+            self.fields['target_f'].widget.attrs['rows'] = 1
+#            self.fields['target_f'].widget = forms.TextInput()  #TODO seems to be causing some problems.
+#            self.fields['target_f'].widget.attrs['size'] = 20
 
         def clean_index(self):
             # Assign new terms an index value
@@ -161,11 +170,13 @@ def manage_store(request, template_vars, language, term_store):
 
     return util.edit(request, 'terminology/manage.html', Unit, template_vars,
                      None, None, queryset=term_store.units, can_delete=True,
-                     form=TermUnitForm, exclude=['state', 'target_f', 'id',
+                     form=TermUnitForm, exclude=['state', 'id',
                         'translator_comment', 'submitted_by', 'commented_by'])
     #TODO 'submitted_by' and 'commented_by' had to be excluded in order to get
     # terminology editing working. When the schema can be changed again this
     # exclusion should be removed and change the schema accordingly.
+    #TODO exclude submitted_by and commented_by, and instead of directly saving the formset edit the modified instances in order to include appropiate values for those fields, and then save the instances. THIS won't work since the problem is that formset says it is not valid because those fields are empty and therefore instances cannot be saved.
+    #TODO 'submitted_by', 'commented_by' had to be excluded in order to allow to edit (create/update/delete) terminology. But it would be better if initial values for these fields could be provided, because when reading the formset those fields are empty and thus the formset is not valid, therefore not allowing to save any change (or deletion) regarding terminology.
 
 @get_translation_project
 @util.has_permission('administrate')
