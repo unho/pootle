@@ -24,6 +24,13 @@ from django.conf import settings
 from django.contrib import admin
 admin.autodiscover()
 
+from tastypie.api import Api
+
+from pootle_language.api import LanguageResource
+
+
+pootle_api = Api(api_name='v0.9')
+pootle_api.register(LanguageResource())
 
 urlpatterns = patterns(
     '',
@@ -41,6 +48,9 @@ urlpatterns = patterns(
     # External apps
     (r'^contact/', include('contact_form_i18n.urls')),
     (r'^accounts/', include('pootle_profile.urls')),
+
+    # Pootle API URLs
+    (r'^api/', include(pootle_api.urls)),
 
     # Pootle URLs
     (r'', include('pootle_app.urls')),

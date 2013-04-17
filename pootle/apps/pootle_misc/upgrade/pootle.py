@@ -146,3 +146,13 @@ def upgrade_to_22000():
         if last_sync:
             store.sync_time = last_sync
             store.save()
+
+
+def upgrade_to_25100():
+    """Post-upgrade actions for upgrades to 25100."""
+    from django.core.management import call_command
+
+    # Run Tastypie management command to add API key for all existing users.
+    call_command('backfill_api_keys')
+
+

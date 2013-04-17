@@ -30,6 +30,8 @@ from django.db.models.signals import post_save
 from django.utils.html import simple_email_re as email_re
 from django.utils.translation import ugettext_lazy as _
 
+from tastypie.models import create_api_key
+
 from pootle.i18n.override import lang_choices
 from pootle_language.models import Language
 from pootle_misc import dispatch
@@ -37,6 +39,10 @@ from pootle_misc.baseurl import l
 from pootle_misc.util import cached_property
 from pootle_statistics.models import Submission, SubmissionTypes
 from pootle_translationproject.models import TranslationProject
+
+
+# Register Tastypie's create_api_key in order to create API keys for new users.
+post_save.connect(create_api_key, sender=User)
 
 
 class PootleUserManager(UserManager):

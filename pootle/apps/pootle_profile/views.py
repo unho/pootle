@@ -26,6 +26,7 @@ from django.utils.encoding import iri_to_uri
 from django.utils.http import urlquote
 
 from profiles.views import edit_profile
+from tastypie.models import ApiKey
 
 from pootle_app.models import Directory
 from pootle_app.models.permissions import check_profile_permission
@@ -41,8 +42,13 @@ def profile_edit(request):
     # FIXME: better to whitelist fields rather than blacklisting them
     excluded = ('user', 'languages', 'projects')
 
+    extra_context = {
+        'api_key': ApiKey.objects.get_or_create(user=request.user)[0].key
+    }
+
     return edit_profile(request,
-                        form_class=pootle_profile_form_factory(excluded))
+                        form_class=pootle_profile_form_factory(excluded),
+                        extra_context=extra_context)
 
 
 @login_required

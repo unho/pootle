@@ -112,6 +112,16 @@ Site-specific settings.
 Configuration settings for applications used by Pootle.
 
 
+.. setting:: API_LIMIT_PER_PAGE
+
+``API_LIMIT_PER_PAGE``
+  Default: ``0``
+
+  .. versionadded:: 2.6
+
+  Number of records Pootle API will show in a list view. ``0`` means no limit.
+
+
 .. setting:: CUSTOM_TEMPLATE_CONTEXT
 
 ``CUSTOM_TEMPLATE_CONTEXT``
@@ -206,6 +216,17 @@ Configuration settings for applications used by Pootle.
 
   When building the terminology, the maximum number of terms that will be
   automatically extracted.
+
+
+.. setting:: TASTYPIE_DEFAULT_FORMATS
+
+``TASTYPIE_DEFAULT_FORMATS``
+  Default: ``['json']``
+
+  .. versionadded:: 2.6
+
+  List defining the allowed serialization formats for Pootle API. Check Tastypie
+  docs for all the available formats and its dependencies.
 
 
 .. setting:: TOPSTAT_SIZE

@@ -12,6 +12,10 @@
 {% block section_description %}{% trans "Here you can configure the settings related to the translation interface as well as your language preferences." %}{% endblock %}
 
 {% block section_body %}
+{% if api_key %}
+  <p>Your API key is {{ api_key }}</p>
+{% endif %}
+
 <form method="post" action="">
   {% csrf_token %}
   {{ form.non_field_errors }}
