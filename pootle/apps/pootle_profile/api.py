@@ -124,6 +124,9 @@ class UserObjectsOnlyAuthorization(DjangoAuthorization):
 
 
 class UserResource(StatisticsModelResource):
+    #TODO Add relationships to projects, translation projects or languages
+    #TODO Add fields from PootleProfile? Or perhaps include the profile as nested resource?
+
     class Meta:
         queryset = User.objects.all()
         resource_name = 'users'
@@ -148,6 +151,13 @@ class UserResource(StatisticsModelResource):
     def retrieve_statistics(self, bundle):
         """Retrieve the statistics for the current resource object."""
         up = PootleProfile.objects.get(user=bundle.obj)
+        ## TODO There is two possible ways to get stats. Find out the
+        ## differences between this two ways and pick the best one.
+        #len(up.suggester.get_query_set())
+        #len(up.submission_set.get_query_set())
+        #len(up.reviewer.get_query_set())
+        ## TODO Or use instead
+        #up.contributions()
         return up.contributions
 
     def dehydrate(self, bundle):

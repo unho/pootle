@@ -34,6 +34,8 @@ from pootle_store.util import OBSOLETE, UNTRANSLATED, FUZZY, TRANSLATED
 TEXT_LOOKUPS = (
     'exact', 'iexact', 'contains', 'icontains', 'startswith', 'istartswith',
     'endswith', 'iendswith',
+    # 'isnull', #TODO isnull doesn't make too much sense.
+    # 'regex',# 'iregex',#TODO regex seems problematic because there is no clean way to provide a regex on a query string.
 )
 
 # Lookups that can be used on DateTimeField fields for filtering objects.
@@ -59,8 +61,13 @@ class SuggestionResource(ModelResource):
 
 
 class UnitResource(ModelResource):
+    #commented_by = fields.ForeignKey('pootle_profile.api.UserProfileResource',
+    #                                 'commented_by', null=True, blank=True)
     store = fields.ForeignKey('pootle_store.api.StoreResource', 'store')
+    #submitted_by = fields.ForeignKey('pootle_profile.api.UserProfileResource',
+    #                                 'submitted_by', null=True, blank=True)
     suggestions = fields.ToManyField(SuggestionResource, 'suggestion_set')
+    #TODO need to look how to provide a file for download and a way to upload a file
 
     class Meta:
         queryset = Unit.objects.all()
@@ -99,6 +106,7 @@ class UnitResource(ModelResource):
         list_allowed_methods = ['get', 'post']
         authorization = DjangoAuthorization()
         authentication = BasicAuthentication()
+        #TODO see what returns Tastypie after PATCHing or PUTting to an unit.
 
     def build_filters(self, filters=None):
         """Given a filters dictionary, create the necessary ORM-level filters.
