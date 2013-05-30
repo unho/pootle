@@ -104,9 +104,33 @@ print("\n%d languages\n" % len(lang_data["objects"]))
 #new = api.languages.post(nlang)
 
 
-sugg_data = api.suggestions(3).get()
+#sugg_data = api.suggestions(3).get()
 
-print sugg_data
+#print sugg_data
 
 #print(type(sugg_data)) # Type is dict
+
+
+
+## Add a new project
+#nproj = {
+#    "checkstyle": "standard",
+#    "code": "ayyzzd",
+#    "description": "",
+##    "directory": "10",
+#    "fullname": "New proj from slumber",
+##    "ignoredfiles": "",
+##    "localfiletype": "po",
+##    "report_target": "",
+#    "source_language": "/api/v1/languages/20/",
+##    "treestyle": "nongnu"
+#}
+#newproj = api.projects.post(nproj)
+
+
+##curl --basic --user admin:admin --verbose --dump-header - -H "Content-Type: application/json" -X POST --data '{"checkstyle": "standard", "code": "ayyzzd", "description": "", "fullname": "New proj from slumber", "source_language": "/api/v1/languages/20/"}' --url http://localhost:8000/api/v1/projects/
+
+
+#print("Type is:")
+#print(type(newproj))
 
