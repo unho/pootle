@@ -20,9 +20,11 @@
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
 from tastypie.authorization import DjangoAuthorization
+from tastypie.cache import SimpleCache
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpNotImplemented
 from tastypie.resources import ModelResource
+from tastypie.throttle import CacheThrottle
 
 from pootle.core.api import StatisticsModelResource
 from pootle_misc.stats import get_raw_stats
@@ -106,6 +108,8 @@ class UnitResource(ModelResource):
         list_allowed_methods = ['get', 'post']
         authorization = DjangoAuthorization()
         authentication = BasicAuthentication()
+        cache = SimpleCache(timeout=60)
+        throttle = CacheThrottle(throttle_at=100)
         #TODO see what returns Tastypie after PATCHing or PUTting to an unit.
 
     def build_filters(self, filters=None):
