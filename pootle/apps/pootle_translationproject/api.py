@@ -30,7 +30,7 @@ from tastypie.utils import trailing_slash
 
 from pootle.core.api import StatisticsModelResource
 from pootle_misc.stats import get_raw_stats
-from pootle_store.api import StoreResource
+from pootle_store.api import StoreResource, UnitResource
 from pootle_store.models import Unit
 from pootle_store.util import OBSOLETE, UNTRANSLATED, FUZZY
 from pootle_translationproject.models import TranslationProject
@@ -118,5 +118,9 @@ class TranslationProjectResource(StatisticsModelResource):
             unfinished = Unit.objects.filter(**criteria)
             unfinished = unfinished.filter(Q(state=FUZZY) | Q(state=OBSOLETE) |
                                            Q(state=UNTRANSLATED))
-            bundle.data['units'] = unfinished#TODO look for a way of putting here a list of resource URIs to UnitResources
+            unfinished_list = []
+            for unit in unfinished:#TODO look for a way of putting here a list of resource URIs to UnitResources
+                unfinished_list.append(UnitResource.get_resource_uri(unit))
+                #ModelCResource().get_resource_uri(modelc_object)
+            bundle.data['units'] = unfinished_list
         return bundle
