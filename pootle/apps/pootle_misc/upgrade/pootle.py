@@ -146,3 +146,11 @@ def upgrade_to_22000():
         if last_sync:
             store.sync_time = last_sync
             store.save()
+
+
+def upgrade_to_25100():
+    """Post-upgrade actions for upgrades to 25100."""
+    from pootle_app.management.commands.initdb import create_default_flags
+
+    # Add default flags to database.
+    create_default_flags()

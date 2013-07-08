@@ -229,6 +229,48 @@ def delete_path_obj(request, path_obj, **kwargs):
         }
 
 
+#
+# Begin demo action for test using Waffle flags for enabling actions.
+#
+def sample_flagged_action(request, path_obj, **kwargs):
+    """Example action for test enabling actions using Waffle.
+
+    This action is a copy of the 'upload_zip' action.
+    """
+    from waffle import flag_is_active
+
+    # NOTE: 'sample_flag' if the flag name.
+    #
+    # You will have to add create this flag (perhaps running the 'upgrade'
+    # command, but have in mind that it might not be created if you already
+    # have `"POOTLE_BUILDVERSION": 25100` inside the value of the settings
+    # field in the table `siteconfig_siteconfiguration`).
+    #
+    # After the flag is created you will have to assign some users to it using
+    # the admin interface (visiting /admin/features.html on Pootle).
+    if flag_is_active(request, 'sample_flag'):
+
+        # The rest of this action code is, in some way, a copy of 'upload_zip'.
+        if (check_permission('translate', request) or
+            check_permission('suggest', request) or
+            check_permission('overwrite', request)):
+
+            text = _("SAMPLE ACTION")
+            tooltip = _('Sample for test enabling actions using Waffle.')
+            link = '#upload'
+
+            return {
+                'icon': 'icon-upload',
+                'class': 'js-popup-inline',
+                'href': link,
+                'text': text,
+                'tooltip': tooltip,
+            }
+#
+# End demo action for test using Waffle flags for enabling actions.
+#
+
+
 def _gen_link_list(request, path_obj, link_funcs, **kwargs):
     """Generates a list of links based on :param:`link_funcs`."""
     links = []
@@ -255,7 +297,7 @@ def action_groups(request, path_obj, **kwargs):
     groups = [
         {'group': 'translate-offline', 'group_display': _("Translate offline"),
          'actions': [download_source, download_xliff,
-                     download_zip, upload_zip]},
+                     download_zip, upload_zip, sample_flagged_action]},
         {'group': 'manage', 'group_display': _("Manage"),
          'actions': [update_from_vcs, commit_to_vcs, update_dir_from_vcs,
                      commit_dir_to_vcs, rescan_project_files,

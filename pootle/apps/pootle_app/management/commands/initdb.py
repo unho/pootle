@@ -46,6 +46,7 @@ def create_default_db():
         create_default_projects()
         create_default_languages()
         create_default_admin()
+        create_default_flags()
     except:
         if transaction.is_dirty():
             transaction.rollback()
@@ -139,3 +140,20 @@ def create_default_admin():
     )
     admin.set_password("admin")
     admin.save()
+
+
+def create_default_flags():
+    """Create the default flags for enable or disable features in Pootle.
+
+    Created flags are not tied to any user nor have set any other field out of
+    the basic ones. If you want to use this flags you will have to to tie them
+    to any existin user or alter any of its other fields. To do so go to the
+    features tab in the admin panel.
+    """
+    from waffle.models import Flag
+
+    sample_flag = Flag(name=u"sample_flag",
+                       superusers=False,
+                       note="Sample flag for enabling an action.",
+    )
+    sample_flag.save()
