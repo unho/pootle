@@ -24,6 +24,52 @@ Pootle-specific Python guidelines
 Pootle has specific conventions for Python coding style.
 
 
+Continuing long statements
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Like in `Continuing long statements
+<http://docs.translatehouse.org/projects/translate-toolkit/en/latest/development/styleguide.html#continuing-long-statements>`_
+in Translate styleguide, but first try the following approaches:
+
+- Use a dictionary to pass the parameters when there are a lot of parameters
+  or when they are too long. Example:
+
+  .. code-block:: python
+
+    # Good.
+    criteria = {
+        'unit__store__translation_project__language': self,
+        'unit__state__gt': OBSOLETE,
+    }
+    return Suggestion.objects.filter(**criteria).count()
+
+
+    # Bad.
+    return Suggestion.objects \
+                     .filter(unit__store__translation_project__language=self,
+                             unit__state__gt=OBSOLETE).count()
+
+
+- Split in separate querysets when chaining a lot of filters on the same
+  queryset. See `QuerySets are lazy
+  <https://docs.djangoproject.com/en/dev/topics/db/queries/#querysets-are-lazy>`_
+
+  .. code-block:: python
+
+    # Good
+    q = Entry.objects.filter(headline__startswith="What")
+    q = q.filter(pub_date__lte=datetime.date.today())
+    q = q.exclude(body_text__icontains="food")
+    print(q)
+
+
+    # Bad
+    q = Entry.objects.filter(headline__startswith="What") \
+                     .filter(pub_date__lte=datetime.date.today()) \
+                     .exclude(body_text__icontains="food")
+    print(q)
+
+
 Imports
 ~~~~~~~
 
