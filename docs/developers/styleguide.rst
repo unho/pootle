@@ -195,6 +195,8 @@ When writing the URL patterns:
     - Use hyphens. Avoid underscores at all costs.
     - To split long URLs use implicit string continuation. Note that URLs are
       raw strings.
+    - AJAX URLs must start with ``ajax/`` to easily differentiate them from
+      regular URLs.
 
   - URL pattern names must be named like ``pootle-{app}-{view}`` (except in
     some cases, like URLs on *pootle_app* app):
@@ -222,6 +224,12 @@ When writing the URL patterns:
             r'and-continued-on-next-line.html$',
             'whatever',
             name='pootle-project-whatever'),
+
+        # XHR URLs.
+        url(r'^ajax/tags/remove/(?P<tag_slug>[a-z0-9-]+)/translation-project/'
+            r'(?P<project_code>[^/]*)/(?P<language_code>[^/]*)$',
+            'ajax_remove_tag_from_tp_in_project',
+            name='pootle-ajax-remove-tag-from-tp'),
 
         # Admin URLs.
         url(r'^(?P<project_code>[^/]*)/admin.html$',
