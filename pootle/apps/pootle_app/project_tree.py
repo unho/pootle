@@ -380,43 +380,66 @@ def convert_template(translation_project, template_store, target_pootle_path,
         template_file = template_store
 
     try:
+
+        print("\n\n\n\n=======\nTPL_STORE: %s\nMONOLINGUAL: %s\n=======\n\n\n" % (template_file.__repr__(), monolingual))#TODO borrar
+
         store = Store.objects.get(pootle_path=target_pootle_path)
+
+        print("\n\n\n\n=======\nSTORE: %s\nSTOR STATE: %s\n=======\n\n\n" % (store.__repr__(), store.state))#TODO borrar
 
         if monolingual and store.state < PARSED:
             #HACKISH: exploiting update from templates to parse monolingual files
+            print("\n\n\n\n=======\nUPDATING MONO\n=======\n\n\n")#TODO borrar
             store.update(store=template_file)
             store.update(update_translation=True)
             return
 
         if not store.file or monolingual:
+            print("\n\n\n\n=======\nHERE 111\n=======\n\n\n")#TODO borrar
             original_file = store
         else:
+            print("\n\n\n\n=======\nHERE 222\n=======\n\n\n")#TODO borrar
             original_file = store.file.store
     except Store.DoesNotExist:
         original_file = None
         store = None
+        print("\n\n\n\n=======\nHERE except\n=======\n\n\n")#TODO borrar
+
+
+    print("\n\n\n\n=======\nRUNNING LOW\n=======\n\n\n")#TODO borrar
+    print("\n\n\n\n=======\ntipo template_file: %s\nTIPO original file: %s\n=======\n\n\n"% (type(template_file), type(original_file)))#TODO borrar
 
     from translate.convert import pot2po
     from pootle_store.filetypes import factory_classes
     output_file = pot2po.convert_stores(template_file, original_file,
                                         fuzzymatching=False,
                                         classes=factory_classes)
+
+    print("\n\n\n\n=======\nOUTPUT FILE: %s\n=======\n\n\n" % output_file)#TODO borrar
+
     if template_store.file:
+        print("\n\n\n\n=======\nTPL HAS FILE\n=======\n\n\n")#TODO borrar
         if store:
+            print("\n\n\n\n=======\nUPDATING IN HERE\n=======\n\n\n")#TODO borrar
             store.update(update_structure=True, update_translation=True,
                          store=output_file, fuzzy=True)
         output_file.settargetlanguage(translation_project.language.code)
         output_file.savefile(target_path)
+        print("\n\n\n\n=======\nSAVED OUTPUT\n=======\n\n\n")#TODO borrar
     elif store:
+        print("\n\n\n\n=======\nTPL NO FILE\n=======\n\n\n")#TODO borrar
         store.mergefile(output_file, None, allownewstrings=True,
                         suggestions=False, notranslate=False,
                         obsoletemissing=True)
     else:
+        print("\n\n\n\n=======\nANYTHING ELSE\n=======\n\n\n")#TODO borrar
         output_file.translation_project = translation_project
         output_file.name = template_store.name
         output_file.parent = translation_project.directory
         output_file.state = PARSED
         output_file.save()
+
+    print("\n\n\n\n=======\nALMOST FINISHED\n=======\n\n\n")#TODO borrar
 
     # pot2po modifies its input stores so clear caches is needed
     if template_store.file:
