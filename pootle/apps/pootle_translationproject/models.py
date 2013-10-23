@@ -60,6 +60,7 @@ def create_translation_project(language, project):
         try:
             translation_project, created = TranslationProject.objects \
                     .get_or_create(language=language, project=project)
+            #print("\n\n\n##########\nCREATED TP  %s  --  %s \n###########\n\n\n" % (language, project))#TODO borrar
             return translation_project
         except OSError:
             return None
@@ -254,8 +255,12 @@ class TranslationProject(models.Model):
 
         super(TranslationProject, self).save(*args, **kwargs)
 
+        #print("\n\n\n##########\nSAVING TP %s  template: %s\n###########\n\n\n" % (self, self.is_template_project))#TODO borrar
+
         if created:
+            #print("\n\n\n##########\nSCANNING FILES FOR TP %s\n###########\n\n\n" % self)#TODO borrar
             self.scan_files()
+            #print("\n\n\n##########\nSCANNED TP %s\n###########\n\n\n" % self)#TODO borrar
 
     def delete(self, *args, **kwargs):
         directory = self.directory
@@ -467,12 +472,14 @@ class TranslationProject(models.Model):
         :param vcs_sync: boolean on whether or not to synchronise the PO
                          directory with the VCS checkout.
         """
+        #print("\n\n\n##########\nINSIDE SCAN TP %s\n###########\n\n\n" % self)#TODO borrar
         proj_ignore = [p.strip() for p in self.project.ignoredfiles.split(',')]
         ignored_files = set(proj_ignore)
         ext = os.extsep + self.project.localfiletype
 
         # Scan for pots if template project
         if self.is_template_project:
+            #print("\n\n\n##########\nIS TEMPLATETP %s\n###########\n\n\n" % self)#TODO borrar
             ext = os.extsep + self.project.get_template_filetype()
 
         from pootle_app.project_tree import (add_files,
@@ -1126,6 +1133,7 @@ def scan_languages(sender, instance, created=False, raw=False, **kwargs):
         return
 
     for language in Language.objects.iterator():
+        #print("\n\n\n##########\nSIGNAL: creating TP %s  %s\n###########\n\n\n" % (language, instance))#TODO borrar
         create_translation_project(language, instance)
 
 post_save.connect(scan_languages, sender=Project)

@@ -333,13 +333,16 @@ class Unit(models.Model, base.TranslationUnit):
         self._encoding = 'UTF-8'
 
     def save(self, *args, **kwargs):
+        print("\n\n///////////////\nOn unit save\n///////////////\nSaving UNIT: %s\n///////////////\nTarget:  %s\n///////////////\n\n" % (self.__unicode__(), self.target))#TODO borrar
         if self._source_updated:
+            print("\n///////////////\nOn unit save\n///////////////\nSource has been updated\n///////////////\n")#TODO borrar
             # update source related fields
             self.source_hash = md5(self.source_f.encode("utf-8")).hexdigest()
             self.source_wordcount = count_words(self.source_f.strings)
             self.source_length = len(self.source_f)
 
         if self._target_updated:
+            print("\n///////////////\nOn unit save\n///////////////\nTarget has been updated\n///////////////\n")#TODO borrar
             # update target related fields
             self.target_wordcount = count_words(self.target_f.strings)
             self.target_length = len(self.target_f)
@@ -350,6 +353,7 @@ class Unit(models.Model, base.TranslationUnit):
                 self.state = UNTRANSLATED
 
         super(Unit, self).save(*args, **kwargs)
+        print("\n///////////////\nOn unit save\n///////////////\nSaved UNIT\n///////////////\n")#TODO borrar
 
         if (settings.AUTOSYNC and self.store.file and
             self.store.state >= PARSED and
@@ -1003,6 +1007,7 @@ class Store(models.Model, base.TranslationStore):
         return str(store)
 
     def save(self, *args, **kwargs):
+        #print("\n\n@@@@@@@@@@@@@@@\nSaving STOR: %s\n@@@@@@@@@@@@@@@\n %s\n@@@@@@@@@@@@@@@\n\n" % (self.__unicode__(),self))#TODO borrar
         self.pootle_path = self.parent.pootle_path + self.name
         super(Store, self).save(*args, **kwargs)
         if hasattr(self, '_units'):
@@ -1015,6 +1020,7 @@ class Store(models.Model, base.TranslationStore):
             # new units, let's flush cache
             deletefromcache(self, ["getquickstats", "getcompletestats",
                                    "get_mtime", "get_suggestion_count"])
+        #print("\n\n@@@@@@@@@@@@@@@\nSaved STOR %s\n@@@@@@@@@@@@@@@\nSTATE %s\n@@@@@@@@@@@@@@@\nPARSED is %s\n@@@@@@@@@@@@@@@\n\n" % (self.__unicode__(),self.state, PARSED))#TODO borrar
 
     def delete(self, *args, **kwargs):
         super(Store, self).delete(*args, **kwargs)
@@ -1104,6 +1110,7 @@ class Store(models.Model, base.TranslationStore):
 
     @commit_on_success
     def parse(self, store=None):
+        print("\n\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@\nPARSING STOR %s\n@@@@@@@@@@@@@@@\nSTATE %s\n@@@@@@@@@@@@@@@\nPARSED is %s\n@@@@@@@@@@@@@@@\n\n" % (self.__unicode__(),self.state, PARSED))#TODO borrar
         self.clean_stale_lock()
 
         if self.state == LOCKED:
@@ -1124,9 +1131,12 @@ class Store(models.Model, base.TranslationStore):
             old_state = self.state
             self.state = LOCKED
             self.save()
+            print("\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\nJUST SAVED STORE TO LOCK IT\n@@@@@@@@@@@@@@@")#TODO borrar
             try:
                 for index, unit in enumerate(store.units):
+                    print("\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\nITERATING OVER STORE UNITS\n@@@@@@@@@@@@@@@\nSource: %s\nTarget: %s\n@@@@@@@@@@@@@@@\n\n" % (unit.source, unit.target))#TODO borrar
                     if unit.istranslatable():
+                        print("\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\nunit is translatable\n@@@@@@@@@@@@@@@\n\n")#TODO borrar
                         try:
                             self.addunit(unit, index)
                         except IntegrityError as e:
@@ -1144,6 +1154,7 @@ class Store(models.Model, base.TranslationStore):
             self.state = PARSED
             self.sync_time = self.get_mtime()
             self.save()
+            print("\n\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\nFINAL STORE SAVE AFTER PARSE TO UNLOCK\n@@@@@@@@@@@@@@@\n\n")#TODO borrar
             return
 
     def _remove_obsolete(self, source):
@@ -1172,6 +1183,8 @@ class Store(models.Model, base.TranslationStore):
             modified since the given change ID.
         """
         self.clean_stale_lock()
+
+        print("\n\n\n\n|||||||||||||||||||||||||||||||||||||||\nUPDATED STORRRR\n|||||||||||||||||||||||||||||||||||||||\n\n\n\n")
 
         if self.state == LOCKED:
             # File currently being updated
@@ -1284,6 +1297,7 @@ class Store(models.Model, base.TranslationStore):
 
                     if (monolingual and not
                         self.translation_project.is_template_project):
+                        print("\n\n\n\n|||||||||||||||||||||||||||||||||||||||\nUPDATING STORRRR:\n\t\tis monolingual and is template TP, so fixing monolingual.\n|||||||||||||||||||||||||||||||||||||||\n\n\n\n")
                         fix_monolingual(unit, newunit, monolingual)
 
                     changed = unit.update(newunit)
@@ -1472,11 +1486,15 @@ class Store(models.Model, base.TranslationStore):
         return max_column(self.unit_set.all(), 'index', -1)
 
     def addunit(self, unit, index=None):
+        print("\n\n@@@@@@@@@@@@@@@\nOn store addunit\n=============\nADDING UNIT target:  |||%s|||\nTO STOR %s\n=============\n\n" % (unit.target, self.__unicode__()))#TODO borrar
         if index is None:
             index = self.max_index() + 1
 
         newunit = self.UnitClass(store=self, index=index)
+
+        print("\n\n@@@@@@@@@@@@@@@\nOn store addunit\n=============\nCREATED UNIT\nsource:  |||%s|||\ntarget:  |||%s|||\n=============\nNow are going to update\n=============\n\n" % (newunit.source, newunit.target))#TODO borrar
         newunit.update(unit)
+        print("\n\n@@@@@@@@@@@@@@@\nOn store addunit\n=============\nUPDATED UNIT target:  |||%s|||\n=============\n\n" % (newunit.target))#TODO borrar
 
         if self.id:
             newunit.save()
