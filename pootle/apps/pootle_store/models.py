@@ -1049,7 +1049,7 @@ class Store(models.Model, base.TranslationStore):
                 self.translation_project \
                     .update_against_templates(pootle_path=self.pootle_path)
             else:
-                self.parse()
+                self.parse()#TODO check this for Android
 
     def require_dbid_index(self, update=False, obsolete=False):
         """build a quick mapping index between unit ids and database ids"""
@@ -1109,7 +1109,7 @@ class Store(models.Model, base.TranslationStore):
         return False
 
     @commit_on_success
-    def parse(self, store=None):
+    def parse(self, store=None):#TODO check this for Android
         print("\n\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@\nPARSING STOR %s\n@@@@@@@@@@@@@@@\nSTATE %s\n@@@@@@@@@@@@@@@\nPARSED is %s\n@@@@@@@@@@@@@@@\n\n" % (self.__unicode__(),self.state, PARSED))#TODO borrar
         self.clean_stale_lock()
 
@@ -1138,7 +1138,7 @@ class Store(models.Model, base.TranslationStore):
                     if unit.istranslatable():
                         print("\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\nunit is translatable\n@@@@@@@@@@@@@@@\n\n")#TODO borrar
                         try:
-                            self.addunit(unit, index)
+                            self.addunit(unit, index)#TODO check this for Android
                         except IntegrityError as e:
                             logging.warning(u'Data integrity error while '
                                             u'importing unit %s:\n%s',
@@ -1226,7 +1226,7 @@ class Store(models.Model, base.TranslationStore):
             if fuzzy:
                 matcher = self.get_matcher()
 
-            monolingual = is_monolingual(type(store))
+            monolingual = is_monolingual(type(store))#TODO check this for Android
 
             # Force a rebuild of the unit ID <-> DB ID index and get IDs for
             # in-DB (old) and on-disk (new) stores
@@ -1298,7 +1298,7 @@ class Store(models.Model, base.TranslationStore):
                     if (monolingual and not
                         self.translation_project.is_template_project):
                         print("\n\n\n\n|||||||||||||||||||||||||||||||||||||||\nUPDATING STORRRR:\n\t\tis monolingual and is template TP, so fixing monolingual.\n|||||||||||||||||||||||||||||||||||||||\n\n\n\n")
-                        fix_monolingual(unit, newunit, monolingual)
+                        fix_monolingual(unit, newunit, monolingual)#TODO check this for Android
 
                     changed = unit.update(newunit)
 
