@@ -358,6 +358,7 @@ class Unit(models.Model, base.TranslationUnit):
         if (settings.AUTOSYNC and self.store.file and
             self.store.state >= PARSED and
             (self._target_updated or self._source_updated)):
+
             #FIXME: last translator information is lost
             self.sync(self.getorig())
             self.store.update_store_header()
@@ -1110,7 +1111,7 @@ class Store(models.Model, base.TranslationStore):
 
     @commit_on_success
     def parse(self, store=None):#TODO check this for Android
-        print("\n\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@\nPARSING STOR %s\n@@@@@@@@@@@@@@@\nSTATE %s\n@@@@@@@@@@@@@@@\nPARSED is %s\n@@@@@@@@@@@@@@@\n\n" % (self.__unicode__(),self.state, PARSED))#TODO borrar
+        print("\n\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\nPARSING STOR %s\n@@@@@@@@@@@@@@@\nSTATE %s\n@@@@@@@@@@@@@@@\nPARSED is %s\n@@@@@@@@@@@@@@@\n\n" % (self.__unicode__(),self.state, PARSED))#TODO borrar
         self.clean_stale_lock()
 
         if self.state == LOCKED:
@@ -1137,6 +1138,9 @@ class Store(models.Model, base.TranslationStore):
                     print("\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\nITERATING OVER STORE UNITS\n@@@@@@@@@@@@@@@\nSource: %s\nTarget: %s\n@@@@@@@@@@@@@@@\n\n" % (unit.source, unit.target))#TODO borrar
                     if unit.istranslatable():
                         print("\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\nunit is translatable\n@@@@@@@@@@@@@@@\n\n")#TODO borrar
+                        if self.translation_project.is_template_project:
+                            print("\n\n\n\n\n\n@@@@@@@@@@@@@@@\nOn store parse\n@@@@@@@@@@@@@@@\nthis is template TP\n@@@@@@@@@@@@@@@\nso blanking unit target\n@@@@@@@@@@@@@@@\n\n\n\n\n\n\n")#TODO borrar
+                            unit.target = u""
                         try:
                             self.addunit(unit, index)#TODO check this for Android
                         except IntegrityError as e:
