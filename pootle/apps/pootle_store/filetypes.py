@@ -124,6 +124,12 @@ def get_supported_formats():
     except ImportError:
         pass
 
+    try:
+        from translate.storage.jsonl10n import JsonFile
+        formats.append(('json', _('JSON'), JsonFile, 'monolingual'))
+    except ImportError:
+        pass
+
     return formats
 
 supported_formats = get_supported_formats()
