@@ -374,6 +374,9 @@ class TranslationProject(models.Model):
     def update_against_templates(self, pootle_path=None):
         """Update translation project from templates."""
 
+
+        print("\n\n\n@@@@@@@@@@@@@\nTP MODEL UPDATING AGAINST TEMPLATES\n@@@@@@@@@@@@@\n\n\n")
+
         if self.is_template_project:
             return
 
@@ -387,7 +390,10 @@ class TranslationProject(models.Model):
         monolingual = self.project.is_monolingual
 
         if not monolingual:
+            print("\n\n\n@@@@@@@@@@@@@\nIS NOT MONOLINGUAL\n@@@@@@@@@@@@@\n\n\n")
             self.sync()
+        else:
+            print("\n\n\n@@@@@@@@@@@@@\nMONOLINGUAL PROJ\n@@@@@@@@@@@@@\n\n\n")
 
         if pootle_path is None:
             oldstats = self.getquickstats()
@@ -399,8 +405,10 @@ class TranslationProject(models.Model):
         for store in template_translation_project.stores.iterator():
             if self.file_style == 'gnu':
                 new_pootle_path, new_path = get_translated_name_gnu(self, store)
+                print("\n\n\n@@@@@@@@@@@@@\nGNU\n@@@@@@@@@@@@@\n\n\n")
             else:
                 new_pootle_path, new_path = get_translated_name(self, store)
+                print("\n\n\n@@@@@@@@@@@@@\nNON GNU\nnew_pootle_path: %s\nnew_path: %s\n@@@@@@@@@@@@@\n\n\n" % (new_pootle_path, new_path))
 
             if pootle_path is not None and new_pootle_path != pootle_path:
                 continue
@@ -416,15 +424,19 @@ class TranslationProject(models.Model):
                 # Assume hook is not present.
                 pass
 
+            print("\n\n\n@@@@@@@@@@@@@\nGOING TO RUN CONVERT_TEMPLATE from project_tree\n@@@@@@@@@@@@@\n\n\n")
             convert_template(self, store, new_pootle_path, new_path,
                              monolingual)
 
+        print("\n\n\n@@@@@@@@@@@@@\nGOING TO SCAN FILES FOR TP\n@@@@@@@@@@@@@\n\n\n")
         all_files, new_files = self.scan_files(vcs_sync=False)
+        print("\n\n\n@@@@@@@@@@@@@\nAFTER SCANNING FILES FOR TP\nall_files: %s\nnew_files: %s\n@@@@@@@@@@@@@\n\n\n" % (all_files, new_files))
 
         from pootle_misc import versioncontrol
         project_path = self.project.get_real_path()
 
         if new_files and versioncontrol.hasversioning(project_path):
+            print("\n\n\n@@@@@@@@@@@@@\nVCS STUFF????\n@@@@@@@@@@@@@\n\n\n")
             from pootle.scripts import hooks
             message = ("New files added from %s based on templates" %
                        settings.TITLE)
@@ -459,6 +471,7 @@ class TranslationProject(models.Model):
                     # development impossible
                     pass
 
+        print("\n\n\n@@@@@@@@@@@@@\nFINISHED UPDATE AGAINST TEMPLATES\n@@@@@@@@@@@@@\n\n\n")
         if pootle_path is None:
             newstats = self.getquickstats()
 
@@ -472,7 +485,7 @@ class TranslationProject(models.Model):
         :param vcs_sync: boolean on whether or not to synchronise the PO
                          directory with the VCS checkout.
         """
-        #print("\n\n\n##########\nINSIDE SCAN TP %s\n###########\n\n\n" % self)#TODO borrar
+        print("\n\n\n##########\nINSIDE SCAN TP %s\nThis just returns a list of the files on disk\n###########\n\n\n" % self)#TODO borrar
         proj_ignore = [p.strip() for p in self.project.ignoredfiles.split(',')]
         ignored_files = set(proj_ignore)
         ext = os.extsep + self.project.localfiletype
@@ -503,8 +516,10 @@ class TranslationProject(models.Model):
             file_filter = lambda filename: True
 
         if vcs_sync:
+            #print("\n\n\n##########\nSYNCING FROM VCS???\n###########\n\n\n")#TODO borrar
             sync_from_vcs(ignored_files, ext, self.real_path, file_filter)
 
+        #print("\n\n\n##########\nABOUT TO CALL add_files\n###########\n\n\n")#TODO borrar
         all_files, new_files = add_files(
                 self,
                 ignored_files,
@@ -513,8 +528,10 @@ class TranslationProject(models.Model):
                 self.directory,
                 file_filter,
         )
-
+        #print("\n\n\n##########\nFINISHING scan_files\nall_files: %s\nnew_files:%s\n###########\n\n\n" % (all_files, new_files))#TODO borrar
         return all_files, new_files
+
+
 
     def update_file_from_version_control(self, store):
         from pootle.scripts import hooks

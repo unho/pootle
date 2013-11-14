@@ -371,7 +371,7 @@ def convert_template(translation_project, template_store, target_pootle_path,
     """Run pot2po to update or initialize the file on `target_path` with
     `template_store`.
     """
-
+    print("\n\n\n\n=======\nIN convert_template\n=======\n\n\n")#TODO borrar
     ensure_target_dir_exists(target_path)
 
     if template_store.file:
@@ -380,12 +380,35 @@ def convert_template(translation_project, template_store, target_pootle_path,
         template_file = template_store
 
     try:
-
-        print("\n\n\n\n=======\nTPL_STORE: %s\nMONOLINGUAL: %s\n=======\n\n\n" % (template_file.__repr__(), monolingual))#TODO borrar
+        print("\n\n\n\n=======\nTPL_STORE: %s\nMONOLINGUAL: %s\ntarget_pootle_path: %s\n=======\n\n\n" % (template_file.__repr__(), monolingual, target_pootle_path))#TODO borrar
 
         store = Store.objects.get(pootle_path=target_pootle_path)
 
         print("\n\n\n\n=======\nSTORE: %s\nSTOR STATE: %s\n=======\n\n\n" % (store.__repr__(), store.state))#TODO borrar
+
+
+        print("\n\n\n\n=======\nBEFORE UPDATING MONO\n=======\nUnits for target_pootle_path:\n=======")#TODO borrar
+        from django.contrib.auth.models import User#TODO borrar
+        uadmin = User.objects.get(username="admin")#TODO borrar
+        uprofile = uadmin.pootleprofile#TODO borrar
+        from pootle_store.models import Unit#TODO borrar
+        units_qs = Unit.objects.get_for_path(target_pootle_path, uprofile)#TODO borrar
+        for unti in units_qs:#TODO borrar
+            print(unti)#TODO borrar
+        print("=======\n\n\n")#TODO borrar
+
+
+        print("\n\n\n\n=======\nBEFORE UPDATING MONO\n=======\nstore (unit_set):\n=======")#TODO borrar
+        for unti in store.unit_set.all():#TODO borrar
+            print(unti)#TODO borrar
+        print("=======\n\n\n")#TODO borrar
+
+
+        print("\n\n\n\n=======\nBEFORE UPDATING MONO\n=======\nstore:\n=======")#TODO borrar
+        for unti in store.units:#TODO borrar
+            print(unti)#TODO borrar
+        print("=======\n\n\n")#TODO borrar
+
 
         if monolingual and store.state < PARSED:
             #HACKISH: exploiting update from templates to parse monolingual files
@@ -393,6 +416,13 @@ def convert_template(translation_project, template_store, target_pootle_path,
             store.update(store=template_file)
             store.update(update_translation=True)
             return
+
+
+        print("\n\n\n\n=======\nAFTER UPDATING MONO\n=======\nstore:\n=======")#TODO borrar
+        for unti in store.units:#TODO borrar
+            print(unti)#TODO borrar
+        print("=======\n\n\n")#TODO borrar
+
 
         if not store.file or monolingual:
             print("\n\n\n\n=======\nHERE 111\n=======\n\n\n")#TODO borrar
@@ -406,19 +436,28 @@ def convert_template(translation_project, template_store, target_pootle_path,
         print("\n\n\n\n=======\nHERE except\n=======\n\n\n")#TODO borrar
 
 
-    print("\n\n\n\n=======\nRUNNING LOW\n=======\n\n\n")#TODO borrar
-    print("\n\n\n\n=======\ntipo template_file: %s\nTIPO original file: %s\n=======\n\n\n"% (type(template_file), type(original_file)))#TODO borrar
+    print("\n\n\n=======\nRUNNING LOW\ntipo template_file: %s\nTIPO original file: %s\n=======\n\n\n"% (type(template_file), type(original_file)))#TODO borrar
 
     from translate.convert import pot2po
     from pootle_store.filetypes import factory_classes
+
+    print("\n\n\n\n=======\nABOUT TO CALL POT2PO\n=======\noriginal_file:\n=======")#TODO borrar
+    for unti in original_file.units:#TODO borrar
+        print(unti)#TODO borrar
+    print("=======\n\n\n")#TODO borrar
+
     output_file = pot2po.convert_stores(template_file, original_file,
                                         fuzzymatching=False,
                                         classes=factory_classes)
 
-    print("\n\n\n\n=======\nOUTPUT FILE: %s\n=======\n\n\n" % output_file)#TODO borrar
+    print("\n\n\n\n=======\nAFTER POT2PO\noutput_file:\n~~~~~~~")
+    for unti in output_file.units:
+        #print("there are units, iterating...")
+        print("%s\t\tFUZZY?: %s" % (unti, unti.isfuzzy()))
+    print("=======\n\n\n")#TODO borrar
 
     if template_store.file:
-        print("\n\n\n\n=======\nTPL HAS FILE\n=======\n\n\n")#TODO borrar
+        print("\n\n\n\n=======\nTPL STORE HAS FILE\n=======\n\n\n")#TODO borrar
         if store:
             print("\n\n\n\n=======\nUPDATING IN HERE\n=======\n\n\n")#TODO borrar
             store.update(update_structure=True, update_translation=True,
@@ -439,7 +478,7 @@ def convert_template(translation_project, template_store, target_pootle_path,
         output_file.state = PARSED
         output_file.save()
 
-    print("\n\n\n\n=======\nALMOST FINISHED\n=======\n\n\n")#TODO borrar
+    print("\n\n\n\n=======\nALMOST FINISHED\nWill delete cache\n=======\n\n\n")#TODO borrar
 
     # pot2po modifies its input stores so clear caches is needed
     if template_store.file:
