@@ -154,6 +154,13 @@ class Project(models.Model, CachedTreeItem, ProjectURLMixin):
 
     directory = models.OneToOneField('pootle_app.Directory', db_index=True,
             editable=False)
+    report_email = models.EmailField(
+        max_length=254,
+        blank=True,
+        verbose_name=_("Errors Report Email"),
+        help_text=_('An email address where issues with the source text can '
+                    'be reported.'),
+    )
 
     screenshot_search_prefix = models.URLField(blank=True, null=True,
             verbose_name=_('Screenshot Search Prefix'))
