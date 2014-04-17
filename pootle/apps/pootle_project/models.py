@@ -433,11 +433,14 @@ class Project(models.Model, CachedTreeItem, ProjectURLMixin):
 
         return self.code in Project.accessible_by_user(user)
 
+    def get_file_extension(self):
+        return self.get_file_class().Extensions[0]
+
     def get_template_filetype(self):
         if self.localfiletype == 'po':
             return 'pot'
         else:
-            return self.localfiletype
+            return self.get_file_extension()
 
     def get_file_class(self):
         """Returns the TranslationStore subclass required for parsing project
@@ -452,7 +455,7 @@ class Project(models.Model, CachedTreeItem, ProjectURLMixin):
         matches the template filetype.
         """
         template_ext = os.path.extsep + self.get_template_filetype()
-        return (filename.endswith(os.path.extsep + self.localfiletype)
+        return (filename.endswith(os.path.extsep + self.get_file_extension())
                 or match_templates and filename.endswith(template_ext))
 
     def _detect_treestyle(self):

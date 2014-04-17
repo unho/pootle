@@ -2159,7 +2159,7 @@ class Store(models.Model, CachedTreeItem, base.TranslationStore):
         }
 
         # only count files with an ext matching the project ext
-        proj_ext = "." + self.translation_project.project.localfiletype
+        proj_ext = "." + self.translation_project.project.get_file_extension()
 
         # XXX: `order_by()` here is important as it removes the default
         # ordering for units. See #3897 for reference.

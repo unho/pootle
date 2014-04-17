@@ -394,7 +394,7 @@ class TranslationProject(models.Model, CachedTreeItem):
         """
         projects = [p.strip() for p in self.project.ignoredfiles.split(',')]
         ignored_files = set(projects)
-        ext = os.extsep + self.project.localfiletype
+        ext = os.extsep + self.project.get_file_extension()
 
         # Scan for pots if template project
         if self.is_template_project:

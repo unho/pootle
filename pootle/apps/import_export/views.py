@@ -69,7 +69,7 @@ def handle_upload_form(request, project):
     """Process the upload form."""
     if request.method == "POST" and "file" in request.FILES:
         upload_form = UploadForm(request.POST, request.FILES)
-        project_filetypes = [project.localfiletype,
+        project_filetypes = [project.get_file_extension(),
                              project.get_template_filetype()]
 
         if upload_form.is_valid():
