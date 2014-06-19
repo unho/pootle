@@ -21,6 +21,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext as _
 
 from pootle_app.models import Directory
@@ -28,7 +29,6 @@ from pootle_app.models.permissions import (get_permission_contenttype,
                                            PermissionSet)
 from pootle_app.views.admin import util
 from pootle_misc.forms import GroupedModelChoiceField
-from pootle_profile.models import PootleProfile
 from pootle_statistics.models import Submission
 
 
@@ -39,6 +39,7 @@ class PermissionFormField(forms.ModelMultipleChoiceField):
 
 
 def admin_permissions(request, current_directory, template, context):
+    User = get_user_model()
     project = context.get('project', None)
     language = context.get('language', None)
 
@@ -57,13 +58,9 @@ def admin_permissions(request, current_directory, template, context):
         codename__in=excluded_permissions,
     )
 
-    base_queryset = PootleProfile.objects.filter(user__is_active=1).exclude(
-            id__in=current_directory.permission_sets \
-                                    .values_list('profile_id', flat=True),
-    )
-    querysets = [(None, base_queryset.filter(
-        user__username__in=('nobody', 'default')
-    ))]
+    excluded = current_directory.permission_sets.values_list("user_id", flat=True)
+    base_queryset = User.objects.filter(is_active=1).exclude(excluded)
+    querysets = [(None, base_queryset.filter(username__in=("nobody", "default")))]
 
     if project is not None:
         if language is not None:
@@ -81,8 +78,7 @@ def admin_permissions(request, current_directory, template, context):
         querysets.append((
             group_label,
             base_queryset.filter(submission__in=contributions)
-                         .distinct()
-                         .order_by('user__username'),
+                         .distinct().order_by("username"),
         ))
 
     if language is not None:
@@ -92,14 +88,13 @@ def admin_permissions(request, current_directory, template, context):
         querysets.append((
             _('Language Contributors'),
             base_queryset.filter(submission__in=contributions)
-                         .distinct()
-                         .order_by('user__username'),
+                         .distinct().order_by("username"),
         ))
 
     querysets.append((
         _('All Users'),
-        base_queryset.exclude(user__username__in=('nobody', 'default'))
-                     .order_by('user__username'),
+        base_queryset.exclude(username__in=("nobody", "default"))
+                     .order_by("username"),
     ))
 
 
@@ -116,7 +111,7 @@ def admin_permissions(request, current_directory, template, context):
         profile = GroupedModelChoiceField(
                 label=_('Username'),
                 querysets=querysets,
-                queryset=PootleProfile.objects.all(),
+                queryset=User.objects.all(),
                 required=True,
                 widget=forms.Select(attrs={
                     'class': 'js-select2 select2-username',
