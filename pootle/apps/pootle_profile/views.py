@@ -21,11 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from accounts.forms import UserForm
-from accounts.views import UserSettingsView
 
-
-# FIXME Move this to accounts
-profile_edit = UserSettingsView.as_view()
 
 @login_required
 def edit_personal_info(request):

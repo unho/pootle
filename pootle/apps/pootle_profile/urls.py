@@ -21,12 +21,14 @@
 from django.conf import settings
 from django.conf.urls import include, patterns, url
 
+from accounts.views import UserSettingsView
 
-urlpatterns = patterns('pootle_profile.views',
+
+urlpatterns = patterns('',
     url(r'^edit/$',
-        'profile_edit',
+        UserSettingsView.as_view(),
         name='pootle-profile-edit'),
     url(r'^personal/edit/$',
-        'edit_personal_info',
+        'pootle_profile.views.edit_personal_info',
         name='pootle-profile-personal-edit'),
 )
