@@ -21,7 +21,7 @@
 from django.conf import settings
 from django.conf.urls import patterns, url
 
-from .views import UserProfileView, UserSettingsView
+from .views import UserDetailView, UserProfileView, UserSettingsView
 
 
 urlpatterns = patterns('',
@@ -32,6 +32,6 @@ urlpatterns = patterns('',
         UserProfileView.as_view(),
         name='pootle-profile-personal-edit'),
     url(r'^(?P<username>[^/]+)/?$',
-        'profiles.views.profile_detail',
+        UserDetailView.as_view(),
         name='profiles_profile_detail'),
 )
