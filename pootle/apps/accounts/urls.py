@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2008-2013 Zuza Software Foundation
+# Copyright 2008-2014 Zuza Software Foundation
 #
 # This file is part of Pootle.
 #
@@ -19,9 +19,9 @@
 # this program; if not, see <http://www.gnu.org/licenses/>.
 
 from django.conf import settings
-from django.conf.urls import include, patterns, url
+from django.conf.urls import patterns, url
 
-from accounts.views import UserSettingsView
+from .views import UserSettingsView
 
 
 urlpatterns = patterns('',
@@ -31,4 +31,7 @@ urlpatterns = patterns('',
     url(r'^personal/edit/$',
         'pootle_profile.views.edit_personal_info',
         name='pootle-profile-personal-edit'),
+    url(r'^(?P<username>[^/]+)/?$',
+        'profiles.views.profile_detail',
+        name='profiles_profile_detail'),
 )
