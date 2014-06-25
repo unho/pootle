@@ -130,7 +130,7 @@ def get_recipients(restrict_to_active_users, directory):
 
     recipients = []
     for user in to_list:
-        # Check if the User profile has permissions in the directory.
+        # Check if the User has permissions in the directory.
         if not check_user_permission(user, "view", directory, check_default=False):
             continue
 
