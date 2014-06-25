@@ -26,35 +26,26 @@ class Migration(SchemaMigration):
                        """)
 
         # Adding M2M table for field alt_src_langs on 'User'
-        old_m2m_table_name = db.shorten_name(u'pootle_app_pootleprofile_alt_src_langs')
-        m2m_table_name = db.shorten_name(u'accounts_user_alt_src_langs')
-        if old_m2m_table_name in connection.introspection.table_names():
+        db.create_table(u'accounts_user_alt_src_langs', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('user', models.ForeignKey(orm[u'accounts.user'], null=False)),
+            ('language', models.ForeignKey(orm[u'pootle_language.language'], null=False))
+        ))
+        db.create_unique(u'accounts_user_alt_src_langs', ['user_id', 'language_id'])
+
+        if u'pootle_app_pootleprofile_alt_src_langs' in connection.introspection.table_names():
             print("Importing alt_src_langs data. If you have a lot of users, this can take a while.")
-            # Add the column
-            db.add_column(old_m2m_table_name, "user",
-                          self.gf("django.db.models.fields.related.ForeignKey")(to=orm[AUTH_USER_MODEL], null=True),
-                          keep_default=False)
+            db.execute("""INSERT INTO accounts_user_alt_src_langs (user_id, language_id)
+                          SELECT profiles.user_id, alt_langs.language_id
+                          FROM pootle_app_pootleprofile_alt_src_langs
+                          AS alt_langs
+                          INNER JOIN pootle_app_pootleprofile
+                          AS profiles
+                          ON alt_langs.pootleprofile_id = profiles.id;
+                       """)
 
-            # Update it with profile.user_id
-            db.execute("""UPDATE %(t)s SET user_id =
-                          (select pootle_app_pootleprofile.user_id FROM pootle_app_pootleprofile
-                           WHERE pootle_app_pootleprofile.id = %(t)s.pootleprofile_id)
-                       """ % {"t": old_m2m_table_name})
-
-            # Set the new user_id column to NOT NULL. Doesn't work in sqlite.
-            if db.backend_name == "postgresql":
-                db.execute("ALTER TABLE %s ALTER COLUMN user_id SET NOT NULL" % (old_m2m_table_name))
-            elif db.backend_name == "mysql":
-                # disgusting...
-                db.execute("ALTER TABLE %s MODIFY user_id INTEGER NOT NULL" % (old_m2m_table_name))
-            db.rename_table(old_m2m_table_name, m2m_table_name)
-        else:
-            db.create_table(m2m_table_name, (
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-                ('user', models.ForeignKey(orm[u'accounts.user'], null=False)),
-                ('language', models.ForeignKey(orm[u'pootle_language.language'], null=False))
-            ))
-            db.create_unique(m2m_table_name, ['user_id', 'language_id'])
+            print("Deleting old alternate source languages table.")
+            db.delete_table(u'pootle_app_pootleprofile_alt_src_langs')
 
 
     def backwards(self, orm):
