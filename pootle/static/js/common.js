@@ -89,6 +89,11 @@
         $('.js-sidebar-tab-display').removeClass('active-sidebar-tab');
         $('#' + $(this).attr('data-target')).show();
         $(this).addClass('active-sidebar-tab');
+        /////////TODO borrar
+        console.log('\n\nAbout to switch tab\n\n\n');//TODO borrar
+        console.log('New tab is: #' + $('.active-sidebar-tab').attr('data-target') + '\n\n\n');//TODO borrar
+        PTL.common.fixSidebarHeight();
+        console.log('Just changed tab again!!!\n\n\n');//TODO borrar
       });
 
       /* Popups */
@@ -474,32 +479,57 @@
     },
 
     fixSidebarHeight: function () {
-      var $announceSidebar = $('#js-announcement-sidebar-pane'),
-          $actionsSidebar = $('#js-actions-sidebar-pane'),
-          $instructSidebar = $('#js-instructions-sidebar-pane'),
-          $goalSidebar = $('#js-goal-sidebar-pane'),
-          annHeight = $announceSidebar.length ? $announceSidebar.height() : 0,
-          actsHeight = $actionsSidebar.length ? $actionsSidebar.height() : 0,
-          instHeight = $instructSidebar.length ? $instructSidebar.height() : 0,
-          goalHeight = $goalSidebar.length ? $goalSidebar.height() : 0,
-          maxSidebarPanesHeight = Math.max(annHeight, actsHeight, instHeight,
-                                           goalHeight);
 
-      if (!maxSidebarPanesHeight) {
-        // If there is no sidebar.
-        return;
+      var $currentPane = $('.active-sidebar-tab'),
+          currentSidebarPaneHeight = 0;
+
+      if ($currentPane.length) {
+        currentSidebarPaneHeight = $('#' + $currentPane.attr('data-target')).height();
+      } else {
+        $currentPane = $('.js-sidebar-pane');
+        currentSidebarPaneHeight = $currentPane.height();
       }
 
-      var $body = $('#body'),
+//      if (!maxSidebarPanesHeight) {
+//        // If there is no sidebar.
+//        return;
+//      }
+
+      var currentSidebarPaneHeight = $('#' + $('.active-sidebar-tab').attr('data-target')).height(),
           $sidebarTabs = $('#sidebar-tabs'),
+          sidebarTabsHeight = $sidebarTabs.length ? $sidebarTabs.height() : 0;
+
+      console.log('Current sidebar is: ' + $('#sidebar').height());//TODO borrar
+      console.log('Active pane is: ' + $('#' + $('.active-sidebar-tab').attr('data-target')).height());//TODO borrar
+      console.log('js-sidebar-pane is: ' + $('.js-sidebar-pane').height());//TODO borrar
+
+      var $body = $('#body'),
           bodyHeight = $body.height(),
           bodyPadding = parseInt($body.css('padding-bottom'), 10),
           contentAreaHeight = $('#wrapper').height() - $body.offset().top -
                               bodyPadding,
-          sidebarTabsHeight = $sidebarTabs.length ? $sidebarTabs.height() : 0,
-          sidebarHeight = sidebarTabsHeight + maxSidebarPanesHeight +
+          //sidebarHeight = $('#sidebar .js-sidebar-pane').height() +
+          //sidebarHeight = sidebarTabsHeight + maxSidebarPanesHeight +
+          sidebarHeight = sidebarTabsHeight + currentSidebarPaneHeight +
                           $('#footer').height() + bodyPadding,
           newHeight = Math.max(contentAreaHeight, sidebarHeight);
+
+
+
+      //var ENheight = $('#sidebar').height() + $('#footer').height() + bodyPadding;
+      //var OURheight = sidebarTabsHeight + actsHeight + $('#footer').height() + bodyPadding;
+      //console.log('#sidebar height: ' + ENheight);//TODO borrar
+      //console.log('OURheight: ' + OURheight);//TODO borrar
+
+      //var CurrentHeight = sidebarTabsHeight + currentSidebarPaneHeight + $('#footer').height() + bodyPadding;
+      //console.log('CurrentHeight: ' + CurrentHeight);//TODO borrar
+      //console.log('sidebarHeight: ' + sidebarHeight);//TODO borrar
+      //console.log('maxSidebarPanesHeight: ' + maxSidebarPanesHeight);//TODO borrar
+      //console.log('active-sidebarHeight: ' + $('.active-sidebar').height());//TODO borrar
+      console.log('sidebarTabsHeight: ' + sidebarTabsHeight);//TODO borrar
+      //console.log('Num of active-sidebar-tab: ' + $('.active-sidebar-tab').length);//TODO borrar
+      //console.log('currentSidebarPaneHeight height: ' + currentSidebarPaneHeight);//TODO borrar
+
 
       if (bodyHeight < contentAreaHeight) {
         $body.css('height', newHeight);
