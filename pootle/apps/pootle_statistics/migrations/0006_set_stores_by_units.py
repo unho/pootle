@@ -2,7 +2,11 @@
 import datetime
 from south.db import db
 from south.v2 import DataMigration
+from django.conf import settings
 from django.db import models
+
+
+AUTH_USER_MODEL = getattr(settings, "AUTH_USER_MODEL", "auth.User")
 
 
 class Migration(DataMigration):
@@ -108,12 +112,12 @@ class Migration(DataMigration):
             'check': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['pootle_store.QualityCheck']", 'null': 'True', 'blank': 'True'}),
             'creation_time': ('django.db.models.fields.DateTimeField', [], {'db_index': 'True'}),
             'field': ('django.db.models.fields.IntegerField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'}),
-            'from_suggestion': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['pootle_app.Suggestion']", 'unique': 'True', 'null': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'new_value': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'old_value': ('django.db.models.fields.TextField', [], {'default': "u''", 'blank': 'True'}),
             'store': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['pootle_store.Store']", 'null': 'True', 'blank': 'True'}),
-            'submitter': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['pootle_profile.PootleProfile']", 'null': 'True'}),
+            'submitter': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['%s']" % (AUTH_USER_MODEL), 'null': 'True'}),
+            'suggestion': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['pootle_store.Suggestion']", 'null': 'True', 'blank': 'True'}),
             'translation_project': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['pootle_translationproject.TranslationProject']"}),
             'type': ('django.db.models.fields.IntegerField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'}),
             'unit': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['pootle_store.Unit']", 'null': 'True', 'blank': 'True'})
