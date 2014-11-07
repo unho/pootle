@@ -21,8 +21,8 @@
 
 from django.db.models.signals import post_save
 
-from pootle_app.signals import (post_file_upload, post_template_update,
-                                post_vc_commit, post_vc_update)
+from pootle_app.signals import (post_template_update, post_vc_commit,
+                                post_vc_update)
 from pootle_language.models import Language
 from pootle_project.models import Project
 
@@ -31,8 +31,6 @@ from . import signals
 
 post_save.connect(signals.new_language, sender=Language)
 post_save.connect(signals.new_project, sender=Project)
-
-post_file_upload.connect(signals.file_uploaded)
 
 post_template_update.connect(signals.updated_against_template)
 

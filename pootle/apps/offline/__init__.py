@@ -16,3 +16,12 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # Pootle; if not, see <http://www.gnu.org/licenses/>.
+
+from pootle_tagging.models import flush_goal_caches
+
+from .signals import post_file_upload
+from .signal_handlers import file_uploaded
+
+
+post_file_upload.connect(file_uploaded)
+post_file_upload.connect(flush_goal_caches)
