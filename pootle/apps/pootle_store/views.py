@@ -39,7 +39,6 @@ from django.template import loader, RequestContext
 from django.utils.translation import to_locale, ugettext as _
 from django.utils.translation.trans_real import parse_accept_lang_header
 from django.utils import timezone
-from django.utils.encoding import iri_to_uri
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST, require_http_methods
 
@@ -62,7 +61,7 @@ from pootle_tagging.forms import TagForm
 from pootle_tagging.models import Goal
 from pootle_translationproject.models import TranslationProject
 
-from .decorators import get_store_context, get_unit_context
+from .decorators import get_unit_context
 from .fields import to_python
 from .forms import (unit_comment_form_factory, unit_form_factory,
                     highlight_whitespace)
@@ -70,59 +69,11 @@ from .models import Store, Suggestion, SuggestionStates, TMUnit, Unit
 from .signals import translation_submitted
 from .templatetags.store_tags import (highlight_diffs, pluralize_source,
                                       pluralize_target)
-from .util import (UNTRANSLATED, FUZZY, TRANSLATED, STATES_MAP,
-                   absolute_real_path, find_altsrcs, get_sugg_list)
+from .util import (UNTRANSLATED, FUZZY, TRANSLATED, STATES_MAP, find_altsrcs,
+                   get_sugg_list)
 
 
 User = get_user_model()
-
-
-@get_store_context('view')
-def export_as_xliff(request, store):
-    """Export given file to xliff for offline translation."""
-    path = store.real_path
-
-    if not path:
-        # bug 2106
-        project = request.translation_project.project
-
-        if project.get_treestyle() == "gnu":
-            path = "/".join(store.pootle_path.split(os.path.sep)[2:])
-        else:
-            parts = store.pootle_path.split(os.path.sep)[1:]
-            path = "%s/%s/%s" % (parts[1], parts[0], "/".join(parts[2:]))
-
-    path, ext = os.path.splitext(path)
-    export_path = "/".join(['POOTLE_EXPORT', path + os.path.extsep + 'xlf'])
-    abs_export_path = absolute_real_path(export_path)
-
-    key = iri_to_uri("%s:export_as_xliff" % store.pootle_path)
-    last_export = cache.get(key)
-
-    if (not (last_export and last_export == store.get_mtime() and
-        os.path.isfile(abs_export_path))):
-        from pootle_app.project_tree import ensure_target_dir_exists
-        from translate.storage.poxliff import PoXliffFile
-        from pootle_misc import ptempfile as tempfile
-        import shutil
-
-        ensure_target_dir_exists(abs_export_path)
-        outputstore = store.convert(PoXliffFile)
-        outputstore.switchfile(store.name, createifmissing=True)
-        fd, tempstore = tempfile.mkstemp(prefix=store.name, suffix='.xlf')
-        os.close(fd)
-        outputstore.savefile(tempstore)
-        shutil.move(tempstore, abs_export_path)
-        cache.set(key, store.get_mtime(), settings.OBJECT_CACHE_TIMEOUT)
-
-    return redirect(reverse('pootle-export', args=[export_path]))
-
-
-@get_store_context('view')
-def download(request, store):
-    store.sync(update_translation=True)
-
-    return redirect(reverse('pootle-export', args=[store.real_path]))
 
 
 ####################### Translate Page ##############################

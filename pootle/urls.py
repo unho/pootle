@@ -33,15 +33,6 @@ urlpatterns = patterns('',
         'django.views.i18n.javascript_catalog',
         {'packages': ('pootle', ), }, ),
 
-    # XXX: Do we really want to let Django serve these files in production?
-    # Direct download of translation files.
-    #
-    # This is also used to provide reverse for the URL.
-    url(r'^export/(?P<path>.*)$',
-        'django.views.static.serve',
-        {'document_root': settings.PODIRECTORY},
-        name='pootle-export'),
-
     # External apps.
     url(r'^contact/', include('pootle_contact.urls')),
     url(r'^accounts/', include('allauth.urls')),
@@ -59,6 +50,7 @@ if settings.POOTLE_ENABLE_API:
 urlpatterns += patterns('',
     # Pootle URLs.
     url(r'^pages/', include('staticpages.urls')),
+    url(r'', include('offline.urls')),
     url(r'', include('pootle_app.urls')),
     url(r'', include('pootle_notifications.urls')),
     url(r'^projects/', include('pootle_project.urls')),

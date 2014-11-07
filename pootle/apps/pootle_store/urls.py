@@ -28,14 +28,6 @@ urlpatterns = patterns('pootle_store.views',
         'permalink_redirect',
         name='pootle-unit-permalink'),
 
-    # Download and export
-    url(r'^download/(?P<pootle_path>.*)/?$',
-        'download',
-        name='pootle-store-download'),
-    url(r'^export-file/xlf/(?P<pootle_path>.*)/?$',
-        'export_as_xliff',
-        name='pootle-store-export-xliff'),
-
     # XHR
     url(r'^xhr/stats/checks/?$',
         'get_qualitycheck_stats',

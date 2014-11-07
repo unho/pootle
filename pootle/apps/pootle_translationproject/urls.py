@@ -65,12 +65,6 @@ urlpatterns = patterns('pootle_translationproject.views',
         'ajax_remove_tag_from_tp',
         name='pootle-xhr-untag-tp'),
 
-    # Exporting files
-    url(r'^(?P<language_code>[^/]*)/(?P<project_code>[^/]*)/'
-        r'(?P<file_path>.*)export/zip/$',
-        'export_zip',
-        name='pootle-tp-export-zip'),
-
     # Translation
     url(r'^(?P<language_code>[^/]*)/(?P<project_code>[^/]*)/'
         r'translate/(?P<dir_path>(.*/)*)(?P<filename>.*\.*)?$',

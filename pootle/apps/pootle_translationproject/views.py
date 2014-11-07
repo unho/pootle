@@ -46,8 +46,7 @@ from pootle.core.helpers import (get_export_view_context, get_overview_context,
                                  get_translation_context)
 from pootle_app.models import Directory
 from pootle_app.models.permissions import check_permission
-from pootle_app.project_tree import (ensure_target_dir_exists,
-                                     direct_language_match_filename)
+from pootle_app.project_tree import direct_language_match_filename
 from pootle_app.views.admin.permissions import admin_permissions as admin_perms
 from pootle_misc.util import jsonify, ajax_required
 from pootle_statistics.models import Submission, SubmissionTypes
@@ -297,7 +296,6 @@ def _handle_upload_form(request, translation_project):
 def overview(request, translation_project, dir_path, filename=None, goal=None):
     from django.utils import dateformat
     from staticpages.models import StaticPage
-    from .actions import action_groups
 
     if filename:
         ctx = {
@@ -327,6 +325,7 @@ def overview(request, translation_project, dir_path, filename=None, goal=None):
 
     #TODO enable again some actions when drilling down a goal.
     if goal is None:
+        from .action_groups import action_groups
         actions = action_groups(request, resource_obj)
     else:
         actions = []
@@ -608,51 +607,6 @@ def edit_settings(request, translation_project):
 
     return HttpResponse(jsonify(response), status=rcode,
                         mimetype="application/json")
-
-
-@get_path_obj
-@permission_required('archive')
-def export_zip(request, translation_project, file_path):
-    from django.core.cache import cache
-    from django.utils.encoding import iri_to_uri
-    from django.utils.timezone import utc
-
-    translation_project.sync()
-    pootle_path = translation_project.pootle_path + (file_path or '')
-
-    archivename = '%s-%s' % (translation_project.project.code,
-                             translation_project.language.code)
-
-    if file_path.endswith('/'):
-        file_path = file_path[:-1]
-
-    if file_path:
-        archivename += '-' + file_path.replace('/', '-')
-
-    archivename += '.zip'
-    export_path = os.path.join('POOTLE_EXPORT', translation_project.real_path,
-                               archivename)
-    abs_export_path = absolute_real_path(export_path)
-
-    key = iri_to_uri("%s:export_zip" % pootle_path)
-    last_export = cache.get(key)
-
-    tp_time = translation_project.get_mtime().replace(tzinfo=utc)
-    up_to_date = False
-
-    if last_export:
-        # Make both datetimes tz-aware to avoid a crash here
-        last_export = last_export.replace(tzinfo=utc)
-        up_to_date = last_export == tp_time
-
-    if not (up_to_date and os.path.isfile(abs_export_path)):
-        ensure_target_dir_exists(abs_export_path)
-        stores = Store.objects.filter(pootle_path__startswith=pootle_path) \
-                              .exclude(file='')
-        translation_project.get_archive(stores, abs_export_path)
-        cache.set(key, tp_time, settings.OBJECT_CACHE_TIMEOUT)
-
-    return redirect(reverse('pootle-export', args=[export_path]))
 
 
 def unix_to_host_path(p):

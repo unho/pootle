@@ -19,83 +19,15 @@
 
 """Actions available for the translation project overview page."""
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.utils.importlib import import_module
 from django.utils.translation import ugettext as _
 
 from pootle.core.actions import directory, store
 from pootle.core.url_helpers import split_pootle_path
 from pootle_app.models.permissions import check_permission
 from versioncontrol.utils import hasversioning
-
-
-@directory
-def download_zip(request, path_obj, **kwargs):
-    if check_permission('archive', request):
-        if not path_obj.is_dir:
-            path_obj = path_obj.parent
-
-        language_code = path_obj.translation_project.language.code
-        project_code = path_obj.translation_project.project.code
-
-        return {
-            'icon': 'icon-download',
-            'href': reverse('pootle-tp-export-zip',
-                            args=[language_code, project_code, path_obj.path]),
-            'text': _('Download (.zip)'),
-        }
-
-
-@store
-def download_source(request, path_obj, **kwargs):
-    href = None
-    if path_obj.name.startswith("pootle-terminology"):
-        text = _("Download XLIFF")
-        tooltip = _("Download file in XLIFF format")
-        href = reverse('pootle-store-export-xliff',
-                       args=[path_obj.pootle_path])
-    elif path_obj.translation_project.project.is_monolingual:
-        text = _('Export')
-        tooltip = _('Export translations')
-    else:
-        text = _('Download')
-        tooltip = _('Download file')
-
-    return {
-        'icon': 'icon-download',
-        'href': href or reverse('pootle-store-download',
-                                args=[path_obj.pootle_path]),
-        'text': text,
-        'tooltip': tooltip,
-    }
-
-
-@store
-def download_xliff(request, path_obj):
-    if (path_obj.translation_project.project.localfiletype == 'xlf' or
-        path_obj.name.startswith("pootle-terminology")):
-        return
-
-    return {
-        'icon': 'icon-download',
-        'href': reverse('pootle-store-export-xliff',
-                        args=[path_obj.pootle_path]),
-        'text': _("Download XLIFF"),
-        'tooltip': _('Download XLIFF file for offline translation'),
-    }
-
-
-def upload_zip(request, path_obj, **kwargs):
-    if (check_permission('translate', request) or
-        check_permission('suggest', request) or
-        check_permission('overwrite', request)):
-        return {
-            'icon': 'icon-upload',
-            'class': 'js-popup-inline',
-            'href': '#upload',
-            'text': _('Upload'),
-            'tooltip': _('Upload translation files or archives in .zip '
-                         'format'),
-        }
 
 
 @store
@@ -229,32 +161,34 @@ def action_groups(request, path_obj, **kwargs):
     :param kwargs: Extra keyword arguments passed to the underlying functions.
     """
     action_groups = []
+    groups = []
 
-    groups = [
-        {
-            'group': 'translate-offline',
-            'group_display': _("Translate offline"),
-            'actions': [
-                download_source,
-                download_xliff,
-                download_zip,
-                upload_zip,
-            ]
-        },
-        {
-            'group': 'manage',
-            'group_display': _("Manage"),
-            'actions': [
-                update_from_vcs,
-                commit_to_vcs,
-                update_dir_from_vcs,
-                commit_dir_to_vcs,
-                rescan_project_files,
-                update_against_templates,
-                delete_path_obj,
-            ],
-        },
-    ]
+    for app in settings.INSTALLED_APPS:
+        if app.startswith("django"):
+            # XXX ideally, we check for app.startswith("pootle.")
+            # but we are not there yet.
+            continue
+
+        try:
+            module = import_module(app + ".actions")
+        except ImportError:
+            continue
+
+        groups.extend(module.get_actions())
+
+    groups.append({
+        'group': 'manage',
+        'group_display': _("Manage"),
+        'actions': [
+            update_from_vcs,
+            commit_to_vcs,
+            update_dir_from_vcs,
+            commit_dir_to_vcs,
+            rescan_project_files,
+            update_against_templates,
+            delete_path_obj,
+        ],
+    })
 
     for group in groups:
         action_links = _gen_link_list(request, path_obj, group['actions'],
