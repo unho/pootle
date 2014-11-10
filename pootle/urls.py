@@ -47,10 +47,15 @@ if settings.POOTLE_ENABLE_API:
         url(r'^api/', include(api_factory().urls)),
     )
 
+if 'offline' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',
+        # Exporting and offline translation URLs.
+        url(r'', include('offline.urls')),
+    )
+
 urlpatterns += patterns('',
     # Pootle URLs.
     url(r'^pages/', include('staticpages.urls')),
-    url(r'', include('offline.urls')),
     url(r'', include('pootle_app.urls')),
     url(r'', include('pootle_notifications.urls')),
     url(r'^projects/', include('pootle_project.urls')),
