@@ -21,7 +21,6 @@
 
 import logging
 import os
-import StringIO
 import json
 from urllib import quote, unquote
 
@@ -46,18 +45,14 @@ from pootle.core.helpers import (get_export_view_context, get_overview_context,
                                  get_translation_context)
 from pootle_app.models import Directory
 from pootle_app.models.permissions import check_permission
-from pootle_app.project_tree import direct_language_match_filename
 from pootle_app.views.admin.permissions import admin_permissions as admin_perms
 from pootle_misc.util import jsonify, ajax_required
-from pootle_statistics.models import Submission, SubmissionTypes
 from pootle_store.models import Store
-from pootle_store.util import (absolute_real_path, relative_real_path,
-                               add_trailing_slash)
 from pootle_tagging.decorators import get_goal
 from pootle_tagging.forms import GoalForm, TagForm
 from pootle_tagging.models import Goal
 
-from .forms import DescriptionForm, upload_form_factory
+from .forms import DescriptionForm
 
 
 ANN_COOKIE_NAME = 'project-announcements'
@@ -232,63 +227,6 @@ def vcs_update(request, translation_project, dir_path, filename):
     return redirect(obj.get_absolute_url())
 
 
-def _handle_upload_form(request, translation_project):
-    """Process the upload form in TP overview."""
-    from offline.signals import post_file_upload
-
-    upload_form_class = upload_form_factory(request)
-
-    if request.method == 'POST' and 'file' in request.FILES:
-        upload_form = upload_form_class(request.POST, request.FILES)
-
-        if not upload_form.is_valid():
-            return upload_form
-        else:
-            django_file = upload_form.cleaned_data['file']
-            overwrite = upload_form.cleaned_data['overwrite']
-            upload_to = upload_form.cleaned_data['upload_to']
-            upload_to_dir = upload_form.cleaned_data['upload_to_dir']
-
-            # XXX Why do we scan here?
-            translation_project.scan_files(vcs_sync=False)
-            oldstats = translation_project.get_stats()
-
-            # The URL relative to the URL of the translation project. Thus, if
-            # directory.pootle_path == /af/pootle/foo/bar, then
-            # relative_root_dir == foo/bar.
-            if django_file.name.endswith('.zip'):
-                archive = True
-                target_directory = upload_to_dir or request.directory
-                upload_archive(request, target_directory, django_file,
-                               overwrite)
-            else:
-                archive = False
-                upload_file(request, request.directory, django_file, overwrite,
-                            store=upload_to)
-
-            translation_project.scan_files(vcs_sync=False)
-            newstats = translation_project.get_stats()
-
-            # Create a submission. Doesn't fix stats but at least shows up in
-            # last activity column.
-            from django.utils import timezone
-            s = Submission(
-                creation_time=timezone.now(),
-                translation_project=translation_project,
-                submitter=request.user,
-                type=SubmissionTypes.UPLOAD,
-                # The other fields are only relevant to unit-based changes.
-            )
-            s.save()
-
-            post_file_upload.send(sender=translation_project,
-                                  user=request.user, oldstats=oldstats,
-                                  newstats=newstats, archive=archive)
-
-    # Always return a blank upload form unless the upload form is not valid.
-    return upload_form_class()
-
-
 @get_path_obj
 @permission_required('view')
 @get_resource
@@ -311,9 +249,10 @@ def overview(request, translation_project, dir_path, filename=None, goal=None):
     if (check_permission('translate', request) or
         check_permission('suggest', request) or
         check_permission('overwrite', request)):
+        from offline.views import handle_upload_form
 
         ctx.update({
-            'upload_form': _handle_upload_form(request, translation_project),
+            'upload_form': handle_upload_form(request, translation_project),
         })
 
     can_edit = check_permission('administrate', request)
@@ -607,298 +546,3 @@ def edit_settings(request, translation_project):
 
     return HttpResponse(jsonify(response), status=rcode,
                         mimetype="application/json")
-
-
-def unix_to_host_path(p):
-    return os.sep.join(p.split('/'))
-
-
-def host_to_unix_path(p):
-    return '/'.join(p.split(os.sep))
-
-
-def get_upload_path(translation_project, relative_root_dir, local_filename):
-    """Gets the path of a translation file being uploaded securely, creating
-    directories as necessary.
-    """
-    dir_path = os.path.join(translation_project.real_path,
-                            unix_to_host_path(relative_root_dir))
-    return relative_real_path(os.path.join(dir_path, local_filename))
-
-
-def get_local_filename(translation_project, upload_filename):
-    base, ext = os.path.splitext(upload_filename)
-    new_ext = translation_project.project.localfiletype
-
-    if new_ext == 'po' and translation_project.is_template_project:
-        new_ext = 'pot'
-
-    local_filename =  '%s.%s' % (base, new_ext)
-
-    # Check if name is valid.
-    if (os.path.basename(local_filename) != local_filename or
-        local_filename.startswith(".")):
-        raise ValueError(_("Invalid/insecure file name: %s", local_filename))
-
-    # XXX: Leakage of the project layout information outside of
-    # project_tree.py! The rest of Pootle shouldn't have to care
-    # whether something is GNU-style or not.
-    if (translation_project.file_style == "gnu" and
-        not translation_project.is_template_project):
-
-        language_code = translation_project.language.code
-        if not direct_language_match_filename(language_code, local_filename):
-            invalid_dict = {
-                'local_filename': local_filename,
-                'langcode': translation_project.language.code,
-                'filetype': translation_project.project.localfiletype,
-            }
-            raise ValueError(_("Invalid GNU-style file name: "
-                               "%(local_filename)s. It must match "
-                               "'%(langcode)s.%(filetype)s'.", invalid_dict))
-    return local_filename
-
-
-def unzip_external(request, directory, django_file, overwrite):
-    # Make a temporary directory to hold a zip file and its unzipped contents.
-    from pootle_misc import ptempfile as tempfile
-    tempdir = tempfile.mkdtemp(prefix='pootle')
-
-    # Make a temporary file to hold the zip file.
-    tempzipfd, tempzipname = tempfile.mkstemp(prefix='pootle', suffix='.zip')
-    try:
-        # Dump the uploaded file to the temporary file.
-        try:
-            os.write(tempzipfd, django_file.read())
-        finally:
-            os.close(tempzipfd)
-        # Unzip the temporary zip file.
-        import subprocess
-        if subprocess.call(["unzip", tempzipname, "-d", tempdir]):
-            import zipfile
-            raise zipfile.BadZipfile(_("Error while extracting archive"))
-        # Enumerate the temporary directory.
-        maybe_skip = True
-        prefix = tempdir
-        for basedir, dirs, files in os.walk(tempdir):
-            if maybe_skip and not files and len(dirs) == 1:
-                try:
-                    directory.child_dirs.get(name=dirs[0])
-                    maybe_skip = False
-                except Directory.DoesNotExist:
-                    prefix = os.path.join(basedir, dirs[0])
-                    continue
-            else:
-                maybe_skip = False
-
-            for fname in files:
-                # Read the contents of a file.
-                fcontents = open(os.path.join(basedir, fname), 'rb').read()
-                newfile = StringIO.StringIO(fcontents)
-                newfile.name = os.path.basename(fname)
-                # Get the filesystem path relative to the temporary directory.
-                subdir = host_to_unix_path(basedir[len(prefix)+len(os.sep):])
-                if subdir:
-                    target_dir = directory.get_or_make_subdir(subdir)
-                else:
-                    target_dir = directory
-                # Construct a full UNIX path relative to the current
-                # translation project URL by attaching a UNIXified
-                # 'relative_host_dir' to the root relative path, i.e. the path
-                # from which the user is uploading the ZIP file.
-                try:
-                    upload_file(request, target_dir, newfile, overwrite)
-                except ValueError:
-                    logging.exception(u"Error adding file %s", fname)
-    finally:
-        # Clean up temporary file and directory used in try-block.
-        import shutil
-        os.unlink(tempzipname)
-        shutil.rmtree(tempdir)
-
-
-def unzip_python(request, directory, django_file, overwrite):
-    import zipfile
-    django_file.seek(0)
-    archive = zipfile.ZipFile(django_file, 'r')
-    # TODO: find a better way to return errors...
-    try:
-        prefix = ''
-        maybe_skip = True
-        for filename in archive.namelist():
-            try:
-                if filename[-1] == '/':
-                    if maybe_skip:
-                        try:
-                            directory.child_dirs.get(name=filename[:-1])
-                            maybe_skip = False
-                        except Directory.DoesNotExist:
-                            prefix = filename
-                else:
-                    maybe_skip = False
-                    subdir = host_to_unix_path(os.path.dirname(filename[len(prefix):]))
-                    if subdir:
-                        target_dir = directory.get_or_make_subdir(subdir)
-                    else:
-                        target_dir = directory
-                    newfile = StringIO.StringIO(archive.read(filename))
-                    newfile.name = os.path.basename(filename)
-                    upload_file(request, target_dir, newfile, overwrite)
-            except ValueError:
-                logging.exception(u"Error adding file %s", filename)
-    finally:
-        archive.close()
-
-
-def upload_archive(request, directory, django_file, overwrite):
-    # First we try to use "unzip" from the system, otherwise fall back to using
-    # the slower zipfile module.
-    try:
-        unzip_external(request, directory, django_file, overwrite)
-    except:
-        unzip_python(request, directory, django_file, overwrite)
-
-
-def overwrite_file(request, relative_root_dir, django_file, upload_path):
-    """Overwrite with uploaded file."""
-    upload_dir = os.path.dirname(absolute_real_path(upload_path))
-    # Ensure that there is a directory into which we can dump the uploaded
-    # file.
-    if not os.path.exists(upload_dir):
-        os.makedirs(upload_dir)
-
-    # Get the file extensions of the uploaded filename and the current
-    # translation project.
-    _upload_base, upload_ext = os.path.splitext(django_file.name)
-    _local_base, local_ext = os.path.splitext(upload_path)
-    # If the extension of the uploaded file matches the extension used in this
-    # translation project, then we simply write the file to the disk.
-    if upload_ext == local_ext:
-        outfile = open(absolute_real_path(upload_path), "wb")
-        try:
-            outfile.write(django_file.read())
-        finally:
-            outfile.close()
-            try:
-                #FIXME: we need a way to delay reparsing
-                store = Store.objects.get(file=upload_path)
-                store.update(update_structure=True, update_translation=True)
-            except Store.DoesNotExist:
-                # newfile, delay parsing
-                pass
-    else:
-        from translate.storage import factory
-        from pootle_store.filetypes import factory_classes
-        newstore = factory.getobject(django_file, classes=factory_classes)
-        if not newstore.units:
-            return
-
-        # If the extension of the uploaded file does not match the extension of
-        # the current translation project, we create an empty file (with the
-        # right extension).
-        empty_store = factory.getobject(absolute_real_path(upload_path),
-                                        classes=factory_classes)
-        # And save it.
-        empty_store.save()
-        request.translation_project.scan_files(vcs_sync=False)
-        # Then we open this newly created file and merge the uploaded file into
-        # it.
-        store = Store.objects.get(file=upload_path)
-        #FIXME: maybe there is a faster way to do this?
-        store.update(update_structure=True, update_translation=True,
-                     store=newstore)
-        store.sync(update_structure=True, update_translation=True,
-                   conservative=False)
-
-
-def upload_file(request, directory, django_file, overwrite, store=None):
-    from django.core.exceptions import PermissionDenied
-    from translate.storage import factory
-    from pootle_store.filetypes import factory_classes
-
-    translation_project = request.translation_project
-    tp_pootle_path_length = len(translation_project.pootle_path)
-    relative_root_dir = directory.pootle_path[tp_pootle_path_length:]
-
-    # for some reason factory checks explicitly for file existance and
-    # if file is open, which makes it difficult to work with Django's
-    # in memory uploads.
-    #
-    # setting _closed to False should work around this
-    #FIXME: hackish, does this have any undesirable side effect?
-    if getattr(django_file, '_closed', None) is None:
-        try:
-            django_file._closed = False
-        except AttributeError:
-            pass
-    # factory also checks for _mode
-    if getattr(django_file, '_mode', None) is None:
-        try:
-            django_file._mode = 1
-        except AttributeError:
-            pass
-    # mode is an attribute not a property in Django 1.1
-    if getattr(django_file, 'mode', None) is None:
-        django_file.mode = 1
-
-    if store and store.file:
-        # Uploading to an existing file.
-        pootle_path = store.pootle_path
-        upload_path = store.real_path
-    elif store:
-        # Uploading to a virtual store.
-        pootle_path = store.pootle_path
-        upload_path = get_upload_path(translation_project, relative_root_dir,
-                                      store.name)
-    else:
-        local_filename = get_local_filename(translation_project,
-                                            django_file.name)
-        pootle_path = directory.pootle_path + local_filename
-        # The full filesystem path to 'local_filename'.
-        upload_path = get_upload_path(translation_project, relative_root_dir,
-                                      local_filename)
-        try:
-            store = translation_project.stores.get(pootle_path=pootle_path)
-        except Store.DoesNotExist:
-            store = None
-
-    if (store is not None and overwrite == 'overwrite' and
-        not check_permission('overwrite', request)):
-        raise PermissionDenied(_("You do not have rights to overwrite files "
-                                 "here."))
-
-    if store is None and not check_permission('administrate', request):
-        raise PermissionDenied(_("You do not have rights to upload new files "
-                                 "here."))
-
-    if overwrite == 'merge' and not check_permission('translate', request):
-        raise PermissionDenied(_("You do not have rights to upload files "
-                                 "here."))
-
-    if overwrite == 'suggest' and not check_permission('suggest', request):
-        raise PermissionDenied(_("You do not have rights to upload files "
-                                 "here."))
-
-    if store is None or (overwrite == 'overwrite' and store.file != ""):
-        overwrite_file(request, relative_root_dir, django_file, upload_path)
-        return
-
-    if store.file and store.file.read() == django_file.read():
-        logging.debug(u"identical file uploaded to %s, not merging",
-                      store.pootle_path)
-        return
-
-    django_file.seek(0)
-    newstore = factory.getobject(django_file, classes=factory_classes)
-
-    #FIXME: are we sure this is what we want to do? shouldn't we
-    # differentiate between structure changing uploads and mere
-    # pretranslate uploads?
-    suggestions = overwrite == 'merge'
-    notranslate = overwrite == 'suggest'
-    allownewstrings = overwrite == 'overwrite' and store.file == ''
-
-    store.mergefile(newstore, request.user, suggestions=suggestions,
-                    notranslate=notranslate,
-                    allownewstrings=allownewstrings,
-                    obsoletemissing=allownewstrings)
