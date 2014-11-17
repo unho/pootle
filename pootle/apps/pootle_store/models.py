@@ -449,8 +449,6 @@ class Unit(models.Model, base.TranslationUnit):
         null=True,
     )
 
-    obsolete = models.BooleanField(default=False)
-
     objects = UnitManager()
 
     class Meta:
@@ -1313,6 +1311,7 @@ class Store(models.Model, TreeItem, base.TranslationStore):
         editable=False,
         db_index=True,
     )
+    obsolete = models.BooleanField(default=False)
 
     tags = TaggableManager(
         blank=True,
