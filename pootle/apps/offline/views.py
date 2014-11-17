@@ -46,6 +46,10 @@ from .signals import post_file_upload
 def download(request, store):
     store.sync(update_translation=True)
 
+    #import logging
+    #logging.debug("\n\n\n\nWorks until here\n\n\n\n")
+    #import sys
+    #sys.exit()
     return redirect(reverse('pootle-export', args=[store.real_path]))
 
 
