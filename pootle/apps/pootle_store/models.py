@@ -1339,7 +1339,7 @@ class Store(models.Model, TreeItem, base.TranslationStore):
     Name = "Model Store"
     is_dir = False
 
-    objects = RelatedManager()
+    objects = StoreManager()
 
     class Meta:
         ordering = ['pootle_path']
