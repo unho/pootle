@@ -22,10 +22,12 @@
 import os
 import shutil
 
-from django.conf import settings
-from pootle_app.project_tree import to_podir_path
-from pootle_store.util import add_trailing_slash, relative_real_path
 from translate.storage import versioncontrol
+
+from django.conf import settings
+
+from pootle_app.project_tree import is_hidden_file, to_podir_path
+from pootle_store.util import add_trailing_slash, relative_real_path
 
 
 class VersionControlError(Exception):

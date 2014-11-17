@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Pootle; if not, see <http://www.gnu.org/licenses/>.
 
-from django.db import models, DatabaseError
+from django.db import models
 
 
 def get_pootle_build(default=0):

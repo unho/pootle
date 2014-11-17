@@ -323,7 +323,7 @@ def create_default_languages():
             except AttributeError:
                 pass
             lang, created = Language.objects.get_or_create(**criteria)
-        except:
+        except Exception:
             pass
 
 

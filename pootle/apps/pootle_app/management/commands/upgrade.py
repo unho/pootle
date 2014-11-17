@@ -55,9 +55,9 @@ def save_build_version(product, build_version):
     pootle_config.save()
 
     if product == 'pootle':
-        logging.info("Database now at Pootle build %d" % build_version)
+        logging.info("Database now at Pootle build %d", build_version)
     elif product == 'ttk':
-        logging.info("Database now at Toolkit build %d" % build_version)
+        logging.info("Database now at Toolkit build %d", build_version)
 
 
 def calculate_stats():
