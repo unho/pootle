@@ -22,31 +22,10 @@
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 
+from pootle.core.actions import directory, store
 from pootle.core.url_helpers import split_pootle_path
 from pootle_app.models.permissions import check_permission
 from versioncontrol.utils import hasversioning
-
-
-def directory(fn):
-    """Decorator that returns links only for directory objects."""
-    def wrapper(request, path_obj, **kwargs):
-        if not path_obj.is_dir:
-            return
-
-        return fn(request, path_obj)
-
-    return wrapper
-
-
-def store(fn):
-    """Decorator that returns links only for store objects."""
-    def wrapper(request, path_obj, **kwargs):
-        if path_obj.is_dir:
-            return
-
-        return fn(request, path_obj)
-
-    return wrapper
 
 
 @directory
