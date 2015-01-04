@@ -8,22 +8,22 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         """Adds the new `hide` negative permission"""
-        Permission = orm['auth.Permission']
-        ContentType = orm['contenttypes.ContentType']
+        #Permission = orm['auth.Permission']
+        #ContentType = orm['contenttypes.ContentType']
 
-        pootle_content_type = ContentType.objects.get(name='pootle')
-        Permission.objects.get_or_create(
-            name='Cannot access a project',
-            codename='hide',
-            content_type=pootle_content_type
-        )
+        #pootle_content_type = ContentType.objects.get(name='pootle')
+        #Permission.objects.get_or_create(
+        #    name='Cannot access a project',
+        #    codename='hide',
+        #    content_type=pootle_content_type
+        #)
 
-        view_permission = Permission.objects.get(
-            codename='view',
-            content_type=pootle_content_type
-        )
-        view_permission.name = 'Can access a project'
-        view_permission.save()
+        #view_permission = Permission.objects.get(
+        #    codename='view',
+        #    content_type=pootle_content_type
+        #)
+        #view_permission.name = 'Can access a project'
+        #view_permission.save()
 
     def backwards(self, orm):
         """Removes the `hide` negative permission"""

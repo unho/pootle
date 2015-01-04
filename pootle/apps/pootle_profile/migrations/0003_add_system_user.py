@@ -11,13 +11,14 @@ from south.v2 import DataMigration
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        system = User.objects.create(
-            username=u"system",
-            first_name=u"system user",
-            is_active=True
-        )
-        system.set_unusable_password()
-        system.save()
+        #system = User.objects.create(
+        #    username=u"system",
+        #    first_name=u"system user",
+        #    is_active=True
+        #)
+        #system.set_unusable_password()
+        #system.save()
+        pass
 
     def backwards(self, orm):
         system = User.objects.get(username=u"system")
