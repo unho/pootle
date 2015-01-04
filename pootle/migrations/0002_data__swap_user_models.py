@@ -8,25 +8,25 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         """Copy existing information from auth.User to the custom user model."""
-        for old_user in orm['auth.User'].objects.iterator():
-            full_name = (u'%s %s' % (old_user.first_name,
-                                     old_user.last_name)).strip()
-            new_user = orm['pootle.User'].objects.create(
-                # Primary key
-                id=old_user.id,
+        #for old_user in orm['auth.User'].objects.iterator():
+        #    full_name = (u'%s %s' % (old_user.first_name,
+        #                             old_user.last_name)).strip()
+        #    new_user = orm['pootle.User'].objects.create(
+        #        # Primary key
+        #        id=old_user.id,
 
-                # From AbstractBaseUser
-                last_login=old_user.last_login,
-                password=old_user.password,
+        #        # From AbstractBaseUser
+        #        last_login=old_user.last_login,
+        #        password=old_user.password,
 
-                # Custom fields
-                username=old_user.username,
-                email=old_user.email,
-                full_name=full_name,
-                is_active=old_user.is_active,
-                is_superuser=old_user.is_superuser,
-                date_joined=old_user.date_joined,
-            )
+        #        # Custom fields
+        #        username=old_user.username,
+        #        email=old_user.email,
+        #        full_name=full_name,
+        #        is_active=old_user.is_active,
+        #        is_superuser=old_user.is_superuser,
+        #        date_joined=old_user.date_joined,
+        #    )
 
         if not db.dry_run:
             # For permissions to work properly after migrating

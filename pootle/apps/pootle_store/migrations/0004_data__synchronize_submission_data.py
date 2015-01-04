@@ -11,30 +11,30 @@ class Migration(DataMigration):
         submission fields available in the :cls:`pootle_store.models.Unit`
         model.
         """
-        from pootle_statistics.models import SubmissionFields
+        #from pootle_statistics.models import SubmissionFields
 
-        rows = orm.Unit.objects.filter(
-            submission__field__in=[
-                SubmissionFields.SOURCE,
-                SubmissionFields.STATE,
-                SubmissionFields.TARGET,
-            ],
-        ).select_related('submission__creation_time',
-                         'submission__submitter') \
-         .order_by('id', '-submission__creation_time') \
-         .values('id', 'submission__creation_time', 'submission__submitter')
+        #rows = orm.Unit.objects.filter(
+        #    submission__field__in=[
+        #        SubmissionFields.SOURCE,
+        #        SubmissionFields.STATE,
+        #        SubmissionFields.TARGET,
+        #    ],
+        #).select_related('submission__creation_time',
+        #                 'submission__submitter') \
+        # .order_by('id', '-submission__creation_time') \
+        # .values('id', 'submission__creation_time', 'submission__submitter')
 
-        saved_id = None
-        for row in rows:
-            unit_id = row['id']
-            if saved_id is None or saved_id != unit_id:
-                last_submitter = row['submission__submitter']
-                last_submission_time = row['submission__creation_time']
-                orm.Unit.objects.filter(id=unit_id).update(
-                    submitted_by=last_submitter,
-                    submitted_on=last_submission_time,
-                )
-                saved_id = unit_id
+        #saved_id = None
+        #for row in rows:
+        #    unit_id = row['id']
+        #    if saved_id is None or saved_id != unit_id:
+        #        last_submitter = row['submission__submitter']
+        #        last_submission_time = row['submission__creation_time']
+        #        orm.Unit.objects.filter(id=unit_id).update(
+        #            submitted_by=last_submitter,
+        #            submitted_on=last_submission_time,
+        #        )
+        #        saved_id = unit_id
 
     def backwards(self, orm):
         """Are you suggesting to bork your data? No way."""

@@ -21,152 +21,153 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
 
-        stats = {
-            'ONE_TO_ONE_COPY': 0,
-            'MANY_TO_MANY_COPY': 0, #!!! impossible ?
-            'PAS_LESS_THAN_PSS': 0,
-            'NO_PAS_FOR_PSS': 0,
-            'PSS_LESS_THAN_PAS': 0, #!!! impossible ?
-            'SUG_CREATED_FROM_SUB': 0,
-            'NO_SUB_FOR_PAS': 0,
-            'NO_PSS_FOR_PENDING_PAS': 0,
-            'DEL_REJECTED_PAS': 0,
-            'NO_UNIT_FOR_PAS': 0,
-            'DUPLICATED_SUG': 0,
-            'SUG_CREATED_FROM_SUB_WITHOUT_PAS': 0,
-            'SUG_CREATION_ERROR': 0,
-        }
+        #stats = {
+        #    'ONE_TO_ONE_COPY': 0,
+        #    'MANY_TO_MANY_COPY': 0, #!!! impossible ?
+        #    'PAS_LESS_THAN_PSS': 0,
+        #    'NO_PAS_FOR_PSS': 0,
+        #    'PSS_LESS_THAN_PAS': 0, #!!! impossible ?
+        #    'SUG_CREATED_FROM_SUB': 0,
+        #    'NO_SUB_FOR_PAS': 0,
+        #    'NO_PSS_FOR_PENDING_PAS': 0,
+        #    'DEL_REJECTED_PAS': 0,
+        #    'NO_UNIT_FOR_PAS': 0,
+        #    'DUPLICATED_SUG': 0,
+        #    'SUG_CREATED_FROM_SUB_WITHOUT_PAS': 0,
+        #    'SUG_CREATION_ERROR': 0,
+        #}
 
-        system = orm['pootle_profile.PootleProfile'].objects.get(user__username='system')
+        #system = orm['pootle_profile.PootleProfile'].objects.get(user__username='system')
 
-        # units with suggestions
-        units = orm['pootle_store.Unit'].objects.filter(suggestion__isnull=False).distinct()
-        for unit in units:
-            store_suggestions = unit.suggestion_set.all().order_by('user')
-            for user_id, ss in groupby(store_suggestions, lambda x: x.user.id):
-                ss = list(ss)
-                app_pending_suggestions = orm['pootle_app.Suggestion'].objects \
-                    .filter(unit=unit.id, suggester__id=user_id, state='pending')
+        ## units with suggestions
+        #units = orm['pootle_store.Unit'].objects.filter(suggestion__isnull=False).distinct()
+        #for unit in units:
+        #    store_suggestions = unit.suggestion_set.all().order_by('user')
+        #    for user_id, ss in groupby(store_suggestions, lambda x: x.user.id):
+        #        ss = list(ss)
+        #        app_pending_suggestions = orm['pootle_app.Suggestion'].objects \
+        #            .filter(unit=unit.id, suggester__id=user_id, state='pending')
 
-                len_ss = len(ss)
-                len_app_pending_suggestions = len(app_pending_suggestions)
+        #        len_ss = len(ss)
+        #        len_app_pending_suggestions = len(app_pending_suggestions)
 
-                if len_ss == len_app_pending_suggestions:
-                    if len_ss == 1:
-                        pas = app_pending_suggestions[0]
-                        sugg = ss[0]
-                        sugg.state = pas.state # state == pending
-                        sugg.creation_time = pas.creation_time
-                        sugg.save()
+        #        if len_ss == len_app_pending_suggestions:
+        #            if len_ss == 1:
+        #                pas = app_pending_suggestions[0]
+        #                sugg = ss[0]
+        #                sugg.state = pas.state # state == pending
+        #                sugg.creation_time = pas.creation_time
+        #                sugg.save()
 
-                        log("pas %d copied and will be deleted" % pas.id)
-                        stats['ONE_TO_ONE_COPY'] += 1
-                        pas.delete()
+        #                log("pas %d copied and will be deleted" % pas.id)
+        #                stats['ONE_TO_ONE_COPY'] += 1
+        #                pas.delete()
 
-                    else:
-                        # there should be no such data in the database
-                        log("%d pending suggestions by %d for %d" % (len_ss, user_id, unit.id))
-                        stats['MANY_TO_MANY_COPY'] += 1
+        #            else:
+        #                # there should be no such data in the database
+        #                log("%d pending suggestions by %d for %d" % (len_ss, user_id, unit.id))
+        #                stats['MANY_TO_MANY_COPY'] += 1
 
-                elif len_ss > len_app_pending_suggestions:
-                    log("%d pss > %d pas for unit %d" % (len_ss, len_app_pending_suggestions, unit.id))
-                    if len_app_pending_suggestions > 0:
-                        stats['PAS_LESS_THAN_PSS'] += 1
-                    else:
-                        stats['NO_PAS_FOR_PSS'] += 1
+        #        elif len_ss > len_app_pending_suggestions:
+        #            log("%d pss > %d pas for unit %d" % (len_ss, len_app_pending_suggestions, unit.id))
+        #            if len_app_pending_suggestions > 0:
+        #                stats['PAS_LESS_THAN_PSS'] += 1
+        #            else:
+        #                stats['NO_PAS_FOR_PSS'] += 1
 
-                    app_suggestion_ids = map(lambda x: x.id, app_pending_suggestions)
-                    orm['pootle_statistics.Submission'].objects \
-                        .filter(from_suggestion__id__in=app_suggestion_ids) \
-                        .update(from_suggestion=None)
-                    app_pending_suggestions.delete()
+        #            app_suggestion_ids = map(lambda x: x.id, app_pending_suggestions)
+        #            orm['pootle_statistics.Submission'].objects \
+        #                .filter(from_suggestion__id__in=app_suggestion_ids) \
+        #                .update(from_suggestion=None)
+        #            app_pending_suggestions.delete()
 
-                else:
-                    # there should be no such data in the database
-                    log("%d pss < %d pas for %d" % (len_ss, len_app_pending_suggestions, unit.id))
-                    stats['PSS_LESS_THAN_PAS'] += 1
+        #        else:
+        #            # there should be no such data in the database
+        #            log("%d pss < %d pas for %d" % (len_ss, len_app_pending_suggestions, unit.id))
+        #            stats['PSS_LESS_THAN_PAS'] += 1
 
-        # all pootle_app_suggestions corresponding to pootle_store_suggestions have been already deleted
+        ## all pootle_app_suggestions corresponding to pootle_store_suggestions have been already deleted
 
-        for pas in orm['pootle_app.Suggestion'].objects.all():
-            try:
-                # unit isn't deleted
-                unit = orm['pootle_store.Unit'].objects.get(id=pas.unit)
+        #for pas in orm['pootle_app.Suggestion'].objects.all():
+        #    try:
+        #        # unit isn't deleted
+        #        unit = orm['pootle_store.Unit'].objects.get(id=pas.unit)
 
-                if pas.state == 'accepted':
-                    try:
-                        # to restore suggestion by submission
-                        sub = orm['pootle_statistics.Submission'].objects.get(unit=unit, from_suggestion=pas)
-                        target = u"%s" % sub.new_value
-                        sugg = {
-                            'target_f': target,
-                            'target_hash': md5(target.encode("utf-8")).hexdigest(),
-                            'unit': unit,
-                            'user': pas.suggester,
-                            'reviewer': pas.reviewer,
-                            'review_time': sub.creation_time,
-                            'state': pas.state, #accepted
-                            'creation_time': None,
-                        }
-                            
-                        try:
-                            sugg = orm['pootle_store.Suggestion'].objects.create(**sugg)
-                            sub.suggestion = sugg
-                            sub.from_suggestion = None
-                            sub.save()
+        #        if pas.state == 'accepted':
+        #            try:
+        #                # to restore suggestion by submission
+        #                sub = orm['pootle_statistics.Submission'].objects.get(unit=unit, from_suggestion=pas)
+        #                target = u"%s" % sub.new_value
+        #                sugg = {
+        #                    'target_f': target,
+        #                    'target_hash': md5(target.encode("utf-8")).hexdigest(),
+        #                    'unit': unit,
+        #                    'user': pas.suggester,
+        #                    'reviewer': pas.reviewer,
+        #                    'review_time': sub.creation_time,
+        #                    'state': pas.state, #accepted
+        #                    'creation_time': None,
+        #                }
+        #                    
+        #                try:
+        #                    sugg = orm['pootle_store.Suggestion'].objects.create(**sugg)
+        #                    sub.suggestion = sugg
+        #                    sub.from_suggestion = None
+        #                    sub.save()
 
-                            log("suggestion created from pas %d and sub %d" % (pas.id, sub.id))
-                            stats['SUG_CREATED_FROM_SUB'] += 1
+        #                    log("suggestion created from pas %d and sub %d" % (pas.id, sub.id))
+        #                    stats['SUG_CREATED_FROM_SUB'] += 1
 
-                        except IntegrityError:
-                            log("failed to create duplicated suggestion from pas %d and sub %d" % (pas.id, sub.id))
+        #                except IntegrityError:
+        #                    log("failed to create duplicated suggestion from pas %d and sub %d" % (pas.id, sub.id))
 
-                            sub.delete()
-                            stats['DUPLICATED_SUG'] += 1
+        #                    sub.delete()
+        #                    stats['DUPLICATED_SUG'] += 1
 
-                    except orm['pootle_statistics.Submission'].DoesNotExist:
-                        log('No submission found for pas %d' % pas.id)
-                        stats['NO_SUB_FOR_PAS'] += 1
+        #            except orm['pootle_statistics.Submission'].DoesNotExist:
+        #                log('No submission found for pas %d' % pas.id)
+        #                stats['NO_SUB_FOR_PAS'] += 1
 
-                elif pas.state == 'pending':
-                    log('No suggestion found for pending pas %d' % pas.id)
-                    stats['NO_PSS_FOR_PENDING_PAS'] += 1
-                else:
-                    log('Delete rejected pas %d' % pas.id)
-                    stats['DEL_REJECTED_PAS'] += 1
+        #        elif pas.state == 'pending':
+        #            log('No suggestion found for pending pas %d' % pas.id)
+        #            stats['NO_PSS_FOR_PENDING_PAS'] += 1
+        #        else:
+        #            log('Delete rejected pas %d' % pas.id)
+        #            stats['DEL_REJECTED_PAS'] += 1
 
-            except orm['pootle_store.Unit'].DoesNotExist:
-                log('no unit for %d' % pas.id)
-                stats['NO_UNIT_FOR_PAS'] += 1
+        #    except orm['pootle_store.Unit'].DoesNotExist:
+        #        log('no unit for %d' % pas.id)
+        #        stats['NO_UNIT_FOR_PAS'] += 1
 
-            pas.delete()
+        #    pas.delete()
 
-        for sub in orm['pootle_statistics.Submission'].objects \
-                .filter(type=SubmissionTypes.SUGG_ACCEPT,
-                        suggestion=None,
-                        field=SubmissionFields.TARGET):
+        #for sub in orm['pootle_statistics.Submission'].objects \
+        #        .filter(type=SubmissionTypes.SUGG_ACCEPT,
+        #                suggestion=None,
+        #                field=SubmissionFields.TARGET):
 
-            sugg = {
-                'target_f': sub.new_value,
-                'target_hash': md5(sub.new_value.encode("utf-8")).hexdigest(),
-                'unit': sub.unit,
-                'user': sub.submitter,
-                'reviewer': system,
-                'review_time': sub.creation_time,
-                'state': 'accepted',
-                'creation_time': None,
-            }
+        #    sugg = {
+        #        'target_f': sub.new_value,
+        #        'target_hash': md5(sub.new_value.encode("utf-8")).hexdigest(),
+        #        'unit': sub.unit,
+        #        'user': sub.submitter,
+        #        'reviewer': system,
+        #        'review_time': sub.creation_time,
+        #        'state': 'accepted',
+        #        'creation_time': None,
+        #    }
 
-            try:
-                sugg = orm['pootle_store.Suggestion'].objects.create(**sugg)
-                sub.suggestion = sugg
-                sub.save()
-                stats['SUG_CREATED_FROM_SUB_WITHOUT_PAS'] += 1
+        #    try:
+        #        sugg = orm['pootle_store.Suggestion'].objects.create(**sugg)
+        #        sub.suggestion = sugg
+        #        sub.save()
+        #        stats['SUG_CREATED_FROM_SUB_WITHOUT_PAS'] += 1
 
-            except:
-                stats['SUG_CREATION_ERROR'] += 1
+        #    except:
+        #        stats['SUG_CREATION_ERROR'] += 1
 
-        log("%s" % stats)
+        #log("%s" % stats)
+        pass
 
     def backwards(self, orm):
         pass

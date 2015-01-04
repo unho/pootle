@@ -12,24 +12,25 @@ class Migration(DataMigration):
         This will create temporal DB fields to copy data over and avoid
         integrity errors while we are at it.
         """
-        db.add_column('staticpages_agreement', 'new_user_id',
-                      models.IntegerField(null=False))
+        #db.add_column('staticpages_agreement', 'new_user_id',
+        #              models.IntegerField(null=False))
 
-        db.execute('''
-            UPDATE staticpages_agreement as A
-            JOIN auth_user AS U on A.user_id = U.id
-            JOIN pootle_app_pootleprofile PP on U.id = PP.user_id
-            SET A.new_user_id = PP.id;
-        ''')
+        #db.execute('''
+        #    UPDATE staticpages_agreement as A
+        #    JOIN auth_user AS Uon A.user_id = U.id
+        #    JOIN pootle_app_pootleprofile PP on U.id = PP.user_id
+        #    SET A.new_user_id = PP.id;
+        #''')
 
-        db.delete_unique('staticpages_agreement', ['user_id', 'document_id'])
+        #db.delete_unique('staticpages_agreement', ['user_id', 'document_id'])
 
-        db.execute('''
-            UPDATE staticpages_agreement SET user_id = new_user_id;
-        ''')
-        db.create_unique('staticpages_agreement', ['user_id', 'document_id'])
+        #db.execute('''
+        #    UPDATE staticpages_agreement SET user_id = new_user_id;
+        #''')
 
-        db.delete_column('staticpages_agreement', 'new_user_id')
+        #db.create_unique('staticpages_agreement', ['user_id', 'document_id'])
+
+        #db.delete_column('staticpages_agreement', 'new_user_id')
 
     def backwards(self, orm):
         "Write your backwards methods here."

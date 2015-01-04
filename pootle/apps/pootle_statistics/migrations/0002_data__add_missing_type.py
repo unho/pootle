@@ -11,14 +11,15 @@ class Migration(DataMigration):
         `SubmissionTypes.SYSTEM` for submission performed by the `system`
         user.
         """
-        from pootle_statistics.models import SubmissionTypes
+        #from pootle_statistics.models import SubmissionTypes
 
-        orm.Submission.objects.filter(
-            type=None,
-            submitter__user__username='system',
-        ).update(
-            type=SubmissionTypes.SYSTEM,
-        )
+        #orm.Submission.objects.filter(
+        #    type=None,
+        #    submitter__user__username='system',
+        #).update(
+        #    type=SubmissionTypes.SYSTEM,
+        #)
+        pass
 
     def backwards(self, orm):
         """Undoes the forwards migration."""

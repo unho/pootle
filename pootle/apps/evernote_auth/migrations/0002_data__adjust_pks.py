@@ -12,24 +12,27 @@ class Migration(DataMigration):
         This will create temporal DB fields to copy data over and avoid
         integrity errors while we are at it.
         """
-        db.add_column('evernote_auth_evernoteaccount', 'new_user_id',
-                      models.IntegerField(null=True, default=None))
+        #db.add_column('evernote_auth_evernoteaccount', 'new_user_id',
+        #              models.IntegerField(null=True, default=None))
 
-        db.execute('''
-            UPDATE evernote_auth_evernoteaccount as EA
-            JOIN auth_user AS U on EA.user_id = U.id
-            JOIN pootle_app_pootleprofile PP on U.id = PP.user_id
-            SET EA.new_user_id = PP.id;
-        ''')
+        #db.execute('''
+        #    UPDATE evernote_auth_evernoteaccount AS EA
+        #    JOIN auth_user AS U
+        #    ON EA.user_id = U.id
+        #    JOIN pootle_app_pootleprofile AS PP
+        #    ON U.id = PP.user_id
+        #    SET EA.new_user_id = PP.id;
+        #''')
 
-        db.delete_unique('evernote_auth_evernoteaccount', 'user_id')
+        #db.delete_unique('evernote_auth_evernoteaccount', 'user_id')
 
-        db.execute('''
-            UPDATE evernote_auth_evernoteaccount SET user_id = new_user_id;
-        ''')
-        db.create_unique('evernote_auth_evernoteaccount', 'user_id')
+        #db.execute('''
+        #    UPDATE evernote_auth_evernoteaccount SET user_id = new_user_id;
+        #''')
 
-        db.delete_column('evernote_auth_evernoteaccount', 'new_user_id')
+        #db.create_unique('evernote_auth_evernoteaccount', 'user_id')
+
+        #db.delete_column('evernote_auth_evernoteaccount', 'new_user_id')
 
     def backwards(self, orm):
         "Write your backwards methods here."
