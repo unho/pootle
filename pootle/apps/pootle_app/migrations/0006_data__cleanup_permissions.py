@@ -8,18 +8,18 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         """Remove `(add|change|delete)_directory` permissions."""
-        Permission = orm['auth.Permission']
-        ContentType = orm['contenttypes.ContentType']
+        #Permission = orm['auth.Permission']
+        #ContentType = orm['contenttypes.ContentType']
 
-        pootle_content_type = ContentType.objects.get(name='pootle',
-                                                      app_label='pootle_app',
-                                                      model="directory")
+        #pootle_content_type = ContentType.objects.get(name='pootle',
+        #                                              app_label='pootle_app',
+        #                                              model="directory")
 
-        delete_permissions = ['add_directory', 'change_directory', 'delete_directory']
-        Permission.objects.filter(
-            codename__in=delete_permissions,
-            content_type=pootle_content_type,
-        ).delete()
+        #delete_permissions = ['add_directory', 'change_directory', 'delete_directory']
+        #Permission.objects.filter(
+        #    codename__in=delete_permissions,
+        #    content_type=pootle_content_type,
+        #).delete()
 
     def backwards(self, orm):
         """No point in going back, these were never used."""
