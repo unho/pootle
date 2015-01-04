@@ -15,7 +15,7 @@ class Migration(BaseMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('counter', self.gf('django.db.models.fields.IntegerField')(default=0)),
         ))
-        orm['pootle_app.Revision'].objects.create(id=0)
+        orm['pootle_app.Revision'].objects.create(id=1)
         db.send_create_signal('pootle_app', ['Revision'])
 
 
