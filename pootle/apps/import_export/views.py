@@ -86,7 +86,7 @@ def _import_file(file):
     except Exception as e:
         raise ValueError(_("Could not create %r. Missing Project/Language? (%s)") % (file.name, e))
 
-    store.update(store=pofile)
+    store.update(overwrite=True, store=pofile)
 
 
 def handle_upload_form(request):
