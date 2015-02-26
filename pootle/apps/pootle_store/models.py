@@ -1817,6 +1817,8 @@ class Store(models.Model, CachedTreeItem, base.TranslationStore):
         ret = cache.get(path, version=mtime)
         if not ret:
             self.file.store.updateheader(add=True, **{"X-Pootle-Path": path})
+            rev = self.get_max_unit_revision()
+            self.file.store.updateheader(add=True, **{"X-Pootle-Revision": rev})
             ret = str(self.file.store)
             cache.set(path, ret, version=mtime)
 
