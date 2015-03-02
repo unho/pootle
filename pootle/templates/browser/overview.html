@@ -75,7 +75,7 @@
 {% endblock %}
 
 {% block pre_content %}
-{% if announcement or upload_form or display_download %}
+{% if display_sidebar %}
 <div id="sidebar"
   class="js-sidebar{% if announcement_displayed %} sidebar-open{% endif %}">
   {% block sidebar_content %}
