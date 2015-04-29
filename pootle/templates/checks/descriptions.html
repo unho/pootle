@@ -1,3 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}Quality Checks | {{ block.super }}{% endblock title %}
+
+{% block header_block %}{% endblock %}
+
+{% block content %}
 <style>
 code,
 tt
@@ -12,6 +18,10 @@ h3:target
     color: #880;
 }
 </style>
+
+<div id="staticpage" dir="ltr">
+
+  <h1 class="title">Quality Checks</h1>
 
 <p>Pootle has an ability to check for common translation mistakes. Once you submit a translation, it will compare its certain features with the original string and identify potential problems. Сhecks are displayed in the upper right corner, just above the submit button. Once there are checks in red, you will stay on the same unit, until you have each check resolved or muted. Note that you should only mute checks if you know what you're doing. Muted checks will be reviewed periodically by the managers.</p>
 
@@ -73,30 +83,30 @@ h3:target
 
 <h3 id="mustache_placeholders">Mustache placeholders</h3>
 
-<p>These are the tags with curly braces like: <code>{{{pointsUrl}}}</code>, <code>{{originalRecipients}}</code>. Please do not modify the text inside such braces and make sure the number of braces in the target string matches the original one.</p>
+<p>These are the tags with curly braces like: <code>{% verbatim %}{{{pointsUrl}}}{% endverbatim %}</code>, <code>{% verbatim %}{{originalRecipients}}{% endverbatim %}</code>. Please do not modify the text inside such braces and make sure the number of braces in the target string matches the original one.</p>
 
 <p>Common mistakes:</p>
 
 <ul>
   <li>
-    <code>{{/supportLink}</code> &mdash; this tag is missing the trailing brace. Here is the correct one: <code>{{/supportLink}}</code>. You can simply copy these tags to your translation.
+    <code>{% verbatim %}{{/supportLink}{% endverbatim %}</code> &mdash; this tag is missing the trailing brace. Here is the correct one: <code>{% verbatim %}{{/supportLink}}{% endverbatim %}</code>. You can simply copy these tags to your translation.
   </li>
   <li>
-    <code>{{# getDarkerFontTag}}{{originalRecipients}}{{/ getDarkerFontTag}}</code> &mdash; here the spaces inside both opening and closing tags are unwanted. The correct string should look like this: <code>{{#getDarkerFontTag}}{{originalRecipients}}{{/getDarkerFontTag}}</code>.
+    <code>{% verbatim %}{{# getDarkerFontTag}}{{originalRecipients}}{{/ getDarkerFontTag}}{% endverbatim %}</code> &mdash; here the spaces inside both opening and closing tags are unwanted. The correct string should look like this: <code>{% verbatim %}{{#getDarkerFontTag}}{{originalRecipients}}{{/getDarkerFontTag}}{% endverbatim %}</code>.
   </li>
 </ul>
 
 
 <h3 id="mustache_placeholder_pairs">Mustache placeholder pairs</h3>
 
-<p>These are the tags with curly braces like: <code>{{#getStrongTag}}{{{appName}}}{{/getStrongTag}}</code>. Please do not modify the text inside such braces, make sure the number of braces in the target string matches the original one and keep in mind that opening tags like <code>{{#tagname}}</code> must precede their closing counterparts, <code>{{/tagname}}</code>.</p>
+<p>These are the tags with curly braces like: <code>{% verbatim %}{{#getStrongTag}}{{{appName}}}{{/getStrongTag}}{% endverbatim %}</code>. Please do not modify the text inside such braces, make sure the number of braces in the target string matches the original one and keep in mind that opening tags like <code>{% verbatim %}{{#tagname}}{% endverbatim %}</code> must precede their closing counterparts, <code>{% verbatim %}{{/tagname}}{% endverbatim %}</code>.</p>
 
 <p>The easiest way to avoid mistakes is to copy the English text to the target string.</p>
 
 
 <h3 id="mustache_like_placeholder_pairs">Mustache like placeholder pairs</h3>
 
-<p>These are the tags with curly braces like: <code>{{getStrongTag}}{{{appName}}}{{/getStrongTag}}</code>. Please do not modify the text inside such braces, make sure the number of braces in the target string matches the original one and keep in mind that opening tags like <code>{{tagname}}</code> must precede their closing counterparts, <code>{{/tagname}}</code>.</p>
+<p>These are the tags with curly braces like: <code>{% verbatim %}{{getStrongTag}}{{{appName}}}{{/getStrongTag}}{% endverbatim %}</code>. Please do not modify the text inside such braces, make sure the number of braces in the target string matches the original one and keep in mind that opening tags like <code>{% verbatim %}{{tagname}}{% endverbatim %}</code> must precede their closing counterparts, <code>{% verbatim %}{{/tagname}}{% endverbatim %}</code>.</p>
 
 <p>The easiest way to avoid mistakes is to copy the English text to the target string.</p>
 
@@ -397,3 +407,6 @@ h3:target
 
 
 <h2>Translate Toolkit Checks</h2>
+
+</div>
+{% endblock content %}
