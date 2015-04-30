@@ -7,7 +7,6 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
-import codecs
 import logging
 import os
 
@@ -19,7 +18,6 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'pootle.settings'
 from django.core.management.base import CommandError, NoArgsCommand
 
 from pootle_misc.checks import check_names, excluded_filters
-from staticpages.models import StaticPage
 
 
 def create_checks_descriptions():
@@ -29,14 +27,7 @@ def create_checks_descriptions():
     except ImportError:
         raise CommandError("Please install missing 'docutils' dependency.")
 
-    # First get Evernote quality checks descriptions.
-    filename = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                            '../../../../templates/checks/descriptions.html')
-
-    with codecs.open(filename, 'r', 'utf-8') as f:
-        body = f.read()
-
-    # Now get Translate Toolkit quality checks descriptions.
+    # Get the Translate Toolkit quality checks descriptions.
 
     def get_check_description(name, filterfunc):
         # Provide a header with an anchor to refer to.
@@ -59,19 +50,24 @@ def create_checks_descriptions():
 
     filterdocs.sort()
 
-    body += u"\n".join(filterdocs)
+    body = u"\n".join(filterdocs)
 
-    # Finally save the quality checks descriptions in a staticpage.
-    checks_page = StaticPage(active=True, title="Quality Checks", body=body,
-                             virtual_path="help/quality-checks")
-    checks_page.save()
+    # Output the quality checks descriptions to the HTML file.
+    filename = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)),
+        '../../../../templates/checks/_ttk_descriptions.html'
+    )
+
+    with open(filename, 'w') as f:
+        f.write(body)
 
 
 class Command(NoArgsCommand):
     help = 'Regenerates the quality checks descriptions.'
 
     def handle_noargs(self, **options):
-        logging.info('Regenerating quality checks descriptions.')
-        StaticPage.objects.filter(virtual_path="help/quality-checks").delete()
+        logging.info('Regenerating Translate Toolkit quality checks '
+                     'descriptions.')
         create_checks_descriptions()
-        logging.info('Successfully regenerated quality checks descriptions.')
+        logging.info('Successfully regenerated Translate Toolkit quality '
+                     'checks descriptions.')
