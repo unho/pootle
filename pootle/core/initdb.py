@@ -15,7 +15,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_noop as _
 
 from pootle.core.models import Revision
-from pootle_app.management.commands.regenerate_checks_descriptions import create_checks_descriptions
 from pootle_app.models import Directory
 from pootle_app.models.permissions import PermissionSet, get_pootle_permission
 from pootle_language.models import Language
@@ -38,7 +37,6 @@ def initdb():
     #create_default_projects()
     #create_default_languages()
     #create_default_admin()
-    create_checks_descriptions()
 
 
 def create_revision():
