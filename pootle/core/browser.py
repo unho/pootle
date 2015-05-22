@@ -97,7 +97,7 @@ def make_generic_item(path_obj, **kwargs):
 def make_directory_item(directory):
     filters = {}
 
-    if VirtualFolder.get_matching_for(directory.pootle_path).count():
+    if directory.vf_treeitems.count():
         # The directory has virtual folders, so append priority sorting to URL.
         filters['sort'] = 'priority'
 
