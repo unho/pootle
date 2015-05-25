@@ -38,7 +38,8 @@ from pootle.core.mixins import CachedMethods, CachedTreeItem
 from pootle.core.models import Revision
 from pootle.core.storage import PootleFileSystemStorage
 from pootle.core.search import SearchBroker
-from pootle.core.url_helpers import get_editor_filter, split_pootle_path
+from pootle.core.url_helpers import (get_all_pootle_paths, get_editor_filter,
+                                     split_pootle_path)
 from pootle.core.utils.timezone import make_aware
 from pootle_misc.aggregate import max_column
 from pootle_misc.checks import check_names, run_given_filters, get_checker
@@ -1425,6 +1426,7 @@ class Store(models.Model, CachedTreeItem, base.TranslationStore):
 
     def delete(self, *args, **kwargs):
         parent = self.get_parent()
+        vf_items = self.parent_vf_treeitems.all()
 
         store_log(user='system', action=STORE_DELETED,
                   path=self.pootle_path, store=self.id)
@@ -1439,6 +1441,9 @@ class Store(models.Model, CachedTreeItem, base.TranslationStore):
         self.clear_all_cache(parents=False, children=False)
         if parent is not None:
             parent.update_all_cache()
+
+            for vfcti in vf_items:
+                vfcti.update_all_cache()
 
     def makeobsolete(self):
         """Make this store and all its units obsolete."""
@@ -2138,6 +2143,17 @@ class Store(models.Model, CachedTreeItem, base.TranslationStore):
         """This TreeItem method is used on directories, translation projects,
         languages and projects. For stores do nothing"""
         return
+
+    def all_pootle_paths(self):
+        """Get cache_key for all parents (to the Language and Project)
+        of current TreeItem
+        """
+        pootle_paths = super(Store, self).all_pootle_paths()
+
+        for vfcti in self.parent_vf_treeitems.iterator():
+            pootle_paths.extend(vfcti.all_pootle_paths())
+
+        return pootle_paths
 
     ### /TreeItem
 

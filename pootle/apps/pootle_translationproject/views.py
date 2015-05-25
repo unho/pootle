@@ -171,10 +171,11 @@ def overview(request, translation_project, dir_path, filename=None):
             })
 
             #FIXME: set vfolders stats in the resource, don't inject them here.
-            stats['vfolders'] = VirtualFolder.get_stats_for(
-                directory.pootle_path,
-                all_vfolders=is_admin
-            )
+            stats['vfolders'] = {}
+
+            for item in directory.vf_treeitems.iterator():
+                if request.user.is_superuser or item.is_visible:
+                    stats['vfolders'][item.code] = item.get_stats(include_children=False)
 
     ctx.update({
         'parent': get_parent(directory if store is None else store),
