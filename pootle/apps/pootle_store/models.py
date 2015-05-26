@@ -2040,9 +2040,13 @@ class Store(models.Model, CachedTreeItem, base.TranslationStore):
 
     def get_parents(self):
         if self.parent.is_translationproject():
-            return [self.translation_project]
+            parents = [self.translation_project]
         else:
-            return [self.parent]
+            parents = [self.parent]
+
+        parents.extend(self.parent_vf_treeitems.all())
+
+        return parents
 
     def get_cachekey(self):
         return self.pootle_path

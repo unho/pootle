@@ -394,8 +394,8 @@ class VFolderCachedTreeItem(models.Model, CachedTreeItem):
     def get_cachekey(self):
         return self.pootle_path
 
-    def get_parent(self):
-        return self.parent
+    def get_parents(self):
+        return [self.parent]
 
     def get_children(self):
         result = [item for item in self.stores.iterator()]
