@@ -31,6 +31,7 @@ from pootle_project.models import Project
 from pootle_store.models import (Store, Unit, PARSED)
 from pootle_store.util import (absolute_real_path, relative_real_path,
                                OBSOLETE)
+from virtualfolder.models import VFolderCachedTreeItem
 
 
 class TranslationProjectNonDBState(object):
@@ -326,6 +327,18 @@ class TranslationProject(models.Model, CachedTreeItem):
 
     def get_parents(self):
         return [self.project]
+
+    def clear_all_cache(self, children=True, parents=True):
+        super(TranslationProject, self).clear_all_cache(children=children,
+                                                        parents=parents)
+
+        # VFolderCachedTreeItem can only have VFolderCachedTreeItem parents so
+        # it is necessary to flush their cache by calling them one by one.
+        tp_vfctis = VFolderCachedTreeItem.objects.filter(
+            pootle_path__startswith=self.pootle_path
+        )
+        for item in tp_vfctis.iterator():
+            item.clear_all_cache(children=False, parents=False)
 
     ### /TreeItem
 
