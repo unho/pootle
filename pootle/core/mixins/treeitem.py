@@ -459,8 +459,10 @@ class CachedTreeItem(TreeItem):
         (should be called before RQ job adding)
         """
         r_con = get_connection()
+        logger.debug("\n\tREGISTERING ALL dirty\n")
         for p in self.all_pootle_paths():
             r_con.zincrby(POOTLE_DIRTY_TREEITEMS, p)
+            logger.debug("Registered dirty %s\n" % p)
 
     def unregister_all_dirty(self, decrement=1):
         """Unregister current TreeItem and all parent paths as dirty
@@ -494,7 +496,27 @@ class CachedTreeItem(TreeItem):
         _dirty = self._dirty_cache.copy()
         if _dirty:
             self._dirty_cache = set()
+            logger.debug("\n\t__SELF update_dirty_cache\n")
             self.register_all_dirty()
+            logger.debug("\n== CONTINUE with update_dirty_cache\n")
+            for p in self.all_pootle_paths():
+                from pootle_app.models import Directory
+                from virtualfolder.models import VFolderCachedTreeItem
+                from pootle_store.models import Store
+                try:
+                    d = Directory.objects.get(pootle_path=p)
+                    logger.debug("%s DIRTY for  %s\n" % (d.get_dirty_score(), p))
+                except Exception:
+                    try:
+                        d = VFolderCachedTreeItem.objects.get(pootle_path=p)
+                        logger.debug("%s DIRTY for vfolder  %s\n" % (d.get_dirty_score(), p))
+                    except Exception:
+                        try:
+                            d = Store.objects.get(pootle_path=p)
+                            logger.debug("%s DIRTY for vfolder  %s\n" % (d.get_dirty_score(), p))
+                        except Exception:
+                            logger.debug("\n\tUNABLE TO GET DIR, STOR or VFOLDR for %s\n" % p)
+                            pass
             create_update_cache_job(self, _dirty)
 
     def update_all_cache(self):
@@ -502,6 +524,7 @@ class CachedTreeItem(TreeItem):
         to the default queue
         """
         self.mark_all_dirty()
+        logger.debug("\n\n\tSELF update_all_cache\n\n")
         self.update_dirty_cache()
 
     def _update_cache_job(self, keys, decrement):
@@ -518,6 +541,8 @@ class CachedTreeItem(TreeItem):
                     self.update_cached(key)
                 except NoCachedStats:
                     keys_for_parent.remove(key)
+
+            #logger.debug("\n\n\n\n\n\tKEYS %s" % (keys_for_parent))
 
             if keys_for_parent:
                 for p in self.get_parents():
@@ -670,6 +695,7 @@ def update_cache_job(instance):
     job_wrapper = JobWrapper(job.id, job.connection)
     keys, decrement = job_wrapper.get_job_params()
     instance._update_cache_job(keys, decrement)
+    #logger.debug("\n\n\nUCJ_function\n%s\n\n" % instance)
     job_wrapper.clear_job_params()
 
 
