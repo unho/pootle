@@ -46,11 +46,8 @@ def po_directory(request):
 
     test_base_dir = tempfile.mkdtemp()
 
-    tutorial_dir = os.path.join(settings.POOTLE_TRANSLATION_DIRECTORY, 'tutorial')
-    tutorial_test_dir = os.path.join(test_base_dir, 'tutorial')
-
     # Copy files over the temporal dir
-    shutil.copytree(tutorial_dir, tutorial_test_dir)
+    shutil.copytree(settings.POOTLE_TRANSLATION_DIRECTORY, test_base_dir)
 
     # Adjust locations
     settings.POOTLE_TRANSLATION_DIRECTORY = test_base_dir
