@@ -47,3 +47,14 @@ class PootleAccountAdapter(DefaultAccountAdapter):
     def add_message(self, request, level, message_template, *args, **kwargs):
         """Silence messages altogether."""
         pass
+
+    def send_confirmation_mail(self, *args, **kwargs):
+        try:
+            super(PootleAccountAdapter, self).send_confirmation_mail(*args, **kwargs)
+        except Exception as e:
+            print("\n\n\n\n\n========\n")
+            print(e)
+            print("\n========\n")
+            print(type(e))
+            print("\n=========\n\n\n\n\n")
+            raise Exception("\n\n\n\n\nEMAIL FAILED!\n\n\n\n\n\n")
