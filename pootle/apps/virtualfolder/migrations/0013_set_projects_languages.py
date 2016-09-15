@@ -11,11 +11,15 @@ def parse_vfolder_rules(vf):
     projects = set()
     new_rules = set()
 
-    full_rules = [vf.location + rule for rule in vf.filter_rules.split(",")]
+    full_rules = [vf.location.strip() + rule.strip()
+                  for rule in vf.filter_rules.split(",")]
 
     for full_rule in full_rules:
         lang_code, proj_code, dir_path, filename = split_pootle_path(full_rule)
-        new_rules.add(dir_path + filename)
+        if filename:
+            new_rules.add(dir_path + filename)
+        else:
+            new_rules.add(dir_path + "*")
         languages.add(lang_code)
         projects.add(proj_code)
 
