@@ -1493,3 +1493,66 @@ def test_store_sync_template(project0_nongnu, templates_project0, caplog):
     assert modified == os.stat(template.file.path).st_mtime
     template.sync(conservative=False)
     assert not modified == os.stat(template.file.path).st_mtime
+
+
+@pytest.mark.django_db
+def test_store_update_with_state_change(store0, admin):
+    units = dict([(x.id, (x.source, x.target, not x.isfuzzy()))
+                  for x in store0.units])
+
+    update_store(
+        store0,
+        units=units.values(),
+        store_revision=store0.data.max_unit_revision,
+        user=admin)
+
+    for unit_id, unit in units.items():
+        assert unit[2] == store0.units.get(id=unit_id).isfuzzy()
+
+
+@pytest.mark.django_db
+def test_update_xliff(store_po, test_fs, xliff):
+    project = store_po.translation_project.project
+    filetype_tool = project.filetype_tool
+    project.filetypes.add(xliff)
+    filetype_tool.set_store_filetype(store_po, xliff)
+
+    with test_fs.open(['data', 'xliff', 'welcome.xliff']) as f:
+        file_store = getclass(f)(f.read())
+    store_po.update(file_store)
+    unit = store_po.units[0]
+    assert unit.istranslated()
+
+    with test_fs.open(['data', 'xliff', 'updated_welcome.xliff']) as f:
+        file_store = getclass(f)(f.read())
+    store_po.update(file_store)
+    updated_unit = store_po.units.get(id=unit.id)
+    assert unit.source != updated_unit.source
+
+
+@pytest.mark.django_db
+def test_update_resurrect(store_po, test_fs):
+    with test_fs.open(['data', 'po', 'obsolete.po']) as f:
+        file_store = getclass(f)(f.read())
+    store_po.update(file_store)
+    obsolete_units = store_po.unit_set.filter(state=OBSOLETE)
+    obsolete_ids = list(obsolete_units.values_list('id', flat=True))
+    assert len(obsolete_ids) > 0
+
+    with test_fs.open(['data', 'po', 'resurrected.po']) as f:
+        file_store = getclass(f)(f.read())
+
+    store_revision = store_po.data.max_unit_revision
+    # set store_revision as we do in update_stores cli command
+    store_po.update(file_store, store_revision=store_revision - 1)
+    obsolete_units = store_po.unit_set.filter(state=OBSOLETE)
+    assert obsolete_units.count() == len(obsolete_ids)
+    for unit in obsolete_units.filter(id__in=obsolete_ids):
+        assert unit.isobsolete()
+
+    # set store_revision as we do in update_stores cli command
+    store_po.update(file_store, store_revision=store_revision)
+    units = store_po.units.filter(id__in=obsolete_ids)
+    assert units.count() == len(obsolete_ids)
+    for unit in units:
+        assert not unit.isobsolete()
