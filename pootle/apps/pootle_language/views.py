@@ -236,24 +236,28 @@ class LanguageSuggestionAdminView(PootleLanguageAdminFormView):
             and form.cleaned_data["comment"])
         if reject_and_notify:
             message = ungettext_lazy(
-                "Rejected %s suggestion with comment. User will be notified",
-                "Rejected %s suggestions with comment. Users will be notified",
-                count, count)
+                "Rejected {count} suggestion with comment. User will be "
+                "notified",
+                "Rejected {count} suggestions with comment. Users will be "
+                "notified",
+                count, {'count': count})
         elif accept_and_notify:
             message = ungettext_lazy(
-                "Accepted %s suggestion with comment. User will be notified",
-                "Accepted %s suggestions with comment. Users will be notified",
-                count, count)
+                "Accepted {count} suggestion with comment. User will be "
+                "notified",
+                "Accepted {count} suggestions with comment. Users will be "
+                "notified",
+                count, {'count': count})
         elif form.cleaned_data["actions"] == "reject":
             message = ungettext_lazy(
-                "Rejected %s suggestion",
-                "Rejected %s suggestions",
-                count, count)
+                "Rejected {count} suggestion",
+                "Rejected {count} suggestions",
+                count, {'count': count})
         else:
             message = ungettext_lazy(
-                "Accepted %s suggestion",
-                "Accepted %s suggestions",
-                count, count)
+                "Accepted {count} suggestion",
+                "Accepted {count} suggestions",
+                count, {'count': count})
         messages.success(self.request, message)
 
     def get_context_data(self, **kwargs):

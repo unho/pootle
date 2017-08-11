@@ -55,8 +55,9 @@ def rq_stats():
     is_running = len(queue.connection.smembers(Worker.redis_workers_keys)) > 0
     if is_running:
         # Translators: this refers to the status of the background job worker
-        status_msg = ungettext('Running (%d worker)', 'Running (%d workers)',
-                               num_workers) % num_workers
+        status_msg = ungettext('Running ({count} worker)',
+                               'Running ({count} workers)',
+                               num_workers, {'count': num_workers})
     else:
         # Translators: this refers to the status of the background job worker
         status_msg = _('Stopped')
