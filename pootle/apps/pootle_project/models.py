@@ -176,18 +176,14 @@ class ProjectURLMixin(object):
 def validate_not_reserved(value):
     if value in RESERVED_PROJECT_CODES:
         raise ValidationError(
-            _('"%(code)s" cannot be used as a project code'),
-            params={'code': value},
-        )
+            _('"{code}" cannot be used as a project code', {'code': value}))
 
 
 def validate_project_checker(value):
     if value not in PROJECT_CHECKERS.keys():
         raise ValidationError(
             # Translators: this refers to the project quality checker
-            _('"%(code)s" cannot be used as a project checker'),
-            params={'code': value},
-        )
+            _('"{code}" cannot be used as a project checker', {'code': value}))
 
 
 class Project(models.Model, CachedTreeItem, ProjectURLMixin):

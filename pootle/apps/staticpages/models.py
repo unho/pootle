@@ -44,7 +44,8 @@ class AbstractPage(models.Model):
         # Translators: Content that will be used to display this static page
         _("Display Content"),
         blank=True,
-        help_text=_('Allowed markup: %s', get_markup_filter_display_name()),
+        help_text=_('Allowed markup: {markup}',
+                    {'markup': get_markup_filter_display_name()}),
     )
     url = models.URLField(
         _("Redirect to URL"),

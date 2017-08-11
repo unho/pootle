@@ -86,8 +86,8 @@ class ProjectForm(forms.ModelForm):
                 if has_stores.exists():
                     raise forms.ValidationError(
                         _("You cannot remove a file type from a Project, "
-                          "if there are files of that file type ('%s')"
-                          % filetype))
+                          "if there are files of that file type "
+                          "('{filetype}')", {'filetype': filetype}))
         return value
 
     def clean_fullname(self):

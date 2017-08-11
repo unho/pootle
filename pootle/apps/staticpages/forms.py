@@ -56,8 +56,8 @@ def agreement_form_factory(pages, user):
                 'classes': 'js-agreement-popup',
                 'title': page.title,
             }
-            label = mark_safe(_('I have read and accept: <a href="%(url)s" '
-                                'class="%(classes)s">%(title)s</a>',
+            label = mark_safe(_('I have read and accept: <a href="{url}" '
+                                'class="{classes}">{title}</a>',
                                 label_params))
 
             field_name = 'legal_%d' % page.pk

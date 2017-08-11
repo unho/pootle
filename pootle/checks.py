@@ -98,8 +98,9 @@ def check_library_versions(app_configs=None, **kwargs):
     if DJANGO_VERSION < DJANGO_MINIMUM_REQUIRED_VERSION:
         errors.append(checks.Critical(
             _("Your version of Django is too old."),
-            hint=_("Try pip install --upgrade 'Django==%s'",
-                   _version_to_string(DJANGO_MINIMUM_REQUIRED_VERSION)),
+            hint=_("Try pip install --upgrade 'Django=={version}'",
+                   {'version':
+                        _version_to_string(DJANGO_MINIMUM_REQUIRED_VERSION)}),
             id="pootle.C002",
         ))
 
@@ -133,9 +134,9 @@ def check_redis(app_configs=None, **kwargs):
     except Exception as e:
         conn_settings = queue.connection.connection_pool.connection_kwargs
         errors.append(checks.Critical(
-            _("Could not connect to Redis (%s)", e),
-            hint=_("Make sure Redis is running on "
-                   "%(host)s:%(port)s") % conn_settings,
+            _("Could not connect to Redis ({error})", {'error': e}),
+            hint=_("Make sure Redis is running on {host}:{port}",
+                   conn_settings),
             id="pootle.C001",
         ))
     else:
@@ -146,7 +147,8 @@ def check_redis(app_configs=None, **kwargs):
             errors.append(checks.Critical(
                 _("Your version of Redis is too old."),
                 hint=_("Update your system's Redis server package to at least "
-                       "version %s", str(REDIS_MINIMUM_REQUIRED_VERSION)),
+                       "version {version}",
+                       {'version': str(REDIS_MINIMUM_REQUIRED_VERSION)}),
                 id="pootle.C007",
             ))
 
@@ -176,7 +178,8 @@ def check_settings(app_configs=None, **kwargs):
             _("Cache backend is not set to Redis."),
             hint=_("Set default cache backend to "
                    "django_redis.cache.RedisCache\n"
-                   "Current settings: %r") % (settings.CACHES.get("default")),
+                   "Current settings: {settings}",
+                   {'settings': settings.CACHES.get("default")})),
             id="pootle.C005",
         ))
     else:
@@ -223,7 +226,8 @@ def check_settings(app_configs=None, **kwargs):
             _("Not using cached_db as session engine"),
             hint=_("Set SESSION_ENGINE to "
                    "django.contrib.sessions.backend.cached_db\n"
-                   "Current settings: %r") % (settings.SESSION_ENGINE),
+                   "Current settings: {settings}",
+                   {'settings': settings.SESSION_ENGINE})),
             id="pootle.W007",
         ))
 
@@ -239,7 +243,8 @@ def check_settings(app_configs=None, **kwargs):
        and settings.POOTLE_CONTACT_ENABLED:
         errors.append(checks.Warning(
             _("POOTLE_CONTACT_EMAIL is using the following default "
-              "setting %r." % settings.POOTLE_CONTACT_EMAIL),
+              "setting {setting}.",
+              {'setting': settings.POOTLE_CONTACT_EMAIL}),
             hint=_("POOTLE_CONTACT_EMAIL is the address that will receive "
                    "messages sent by the contact form."),
             id="pootle.W011",
@@ -257,7 +262,7 @@ def check_settings(app_configs=None, **kwargs):
                                        "webmaster@localhost"):
         errors.append(checks.Warning(
             _("DEFAULT_FROM_EMAIL is using the following default "
-              "setting %r." % settings.DEFAULT_FROM_EMAIL),
+              "setting {setting}.", {'setting': settings.DEFAULT_FROM_EMAIL}),
             hint=_("DEFAULT_FROM_EMAIL is used in all outgoing Pootle email.\n"
                    "Don't forget to review your mail server settings."),
             id="pootle.W010",
@@ -269,15 +274,18 @@ def check_settings(app_configs=None, **kwargs):
         for server in settings.POOTLE_TM_SERVER:
             if 'INDEX_NAME' not in settings.POOTLE_TM_SERVER[server]:
                 errors.append(checks.Critical(
-                    _("POOTLE_TM_SERVER['%s'] has no INDEX_NAME.", server),
-                    hint=_("Set an INDEX_NAME for POOTLE_TM_SERVER['%s'].",
-                           server),
+                    _("POOTLE_TM_SERVER['{server}'] has no INDEX_NAME.",
+                      {'server': server}),
+                    hint=_("Set an INDEX_NAME for "
+                           "POOTLE_TM_SERVER['{server}'].",
+                           {'server': server}),
                     id="pootle.C008",
                 ))
             elif settings.POOTLE_TM_SERVER[server]['INDEX_NAME'] in tm_indexes:
                 errors.append(checks.Critical(
-                    _("Duplicate '%s' INDEX_NAME in POOTLE_TM_SERVER.",
-                      settings.POOTLE_TM_SERVER[server]['INDEX_NAME']),
+                    _("Duplicate '{index}' INDEX_NAME in POOTLE_TM_SERVER.",
+                      {'index':
+                           settings.POOTLE_TM_SERVER[server]['INDEX_NAME']}),
                     hint=_("Set different INDEX_NAME for all servers in "
                            "POOTLE_TM_SERVER."),
                     id="pootle.C009",
@@ -288,25 +296,28 @@ def check_settings(app_configs=None, **kwargs):
 
             if 'ENGINE' not in settings.POOTLE_TM_SERVER[server]:
                 errors.append(checks.Critical(
-                    _("POOTLE_TM_SERVER['%s'] has no ENGINE.", server),
-                    hint=_("Set a ENGINE for POOTLE_TM_SERVER['%s'].",
-                           server),
+                    _("POOTLE_TM_SERVER['{server}'] has no ENGINE.",
+                      {'server': server}),
+                    hint=_("Set a ENGINE for POOTLE_TM_SERVER['{server}'].",
+                           {'server': server}),
                     id="pootle.C010",
                 ))
 
             if 'HOST' not in settings.POOTLE_TM_SERVER[server]:
                 errors.append(checks.Critical(
-                    _("POOTLE_TM_SERVER['%s'] has no HOST.", server),
-                    hint=_("Set a HOST for POOTLE_TM_SERVER['%s'].",
-                           server),
+                    _("POOTLE_TM_SERVER['{server}'] has no HOST.",
+                      {'server': server}),
+                    hint=_("Set a HOST for POOTLE_TM_SERVER['{server}'].",
+                           {'server': server}),
                     id="pootle.C011",
                 ))
 
             if 'PORT' not in settings.POOTLE_TM_SERVER[server]:
                 errors.append(checks.Critical(
-                    _("POOTLE_TM_SERVER['%s'] has no PORT.", server),
-                    hint=_("Set a PORT for POOTLE_TM_SERVER['%s'].",
-                           server),
+                    _("POOTLE_TM_SERVER['{server}'] has no PORT.",
+                      {'server': server}),
+                    hint=_("Set a PORT for POOTLE_TM_SERVER['{server}'].",
+                           {'server': server}),
                     id="pootle.C012",
                 ))
 
@@ -314,30 +325,32 @@ def check_settings(app_configs=None, **kwargs):
                 not (0.0 <= settings.POOTLE_TM_SERVER[server]['WEIGHT']
                      <= 1.0)):
                 errors.append(checks.Warning(
-                    _("POOTLE_TM_SERVER['%s'] has a WEIGHT less than 0.0 or "
-                      "greater than 1.0", server),
+                    _("POOTLE_TM_SERVER['{server}'] has a WEIGHT less than "
+                      "0.0 or greater than 1.0", {'server': server}),
                     hint=_("Set a WEIGHT between 0.0 and 1.0 (both included) "
-                           "for POOTLE_TM_SERVER['%s'].", server),
+                           "for POOTLE_TM_SERVER['{server}'].",
+                           {'server': server}),
                     id="pootle.W019",
                 ))
 
     for coefficient_name in EXPECTED_POOTLE_SCORES:
         if coefficient_name not in settings.POOTLE_SCORES:
             errors.append(checks.Critical(
-                _("POOTLE_SCORES has no %s.", coefficient_name),
-                hint=_("Set %s in POOTLE_SCORES.",
-                       coefficient_name),
+                _("POOTLE_SCORES has no {coefficient_name}.",
+                  {'coefficient_name': coefficient_name}),
+                hint=_("Set {coefficient_name} in POOTLE_SCORES.",
+                       {'coefficient_name': coefficient_name}),
                 id="pootle.C014",
             ))
         else:
             coef = settings.POOTLE_SCORES[coefficient_name]
             if not isinstance(coef, (float, int)):
                 errors.append(checks.Critical(
-                    _("Invalid value for %s in POOTLE_SCORES.",
-                      coefficient_name),
-                    hint=_(
-                        "Set a valid value for %s "
-                        "in POOTLE_SCORES.", coefficient_name),
+                    _("Invalid value for {coefficient_name} in POOTLE_SCORES.",
+                      {'coefficient_name': coefficient_name}),
+                    hint=_("Set a valid value for {coefficient_name} in "
+                           "POOTLE_SCORES.",
+                           {'coefficient_name': coefficient_name}),
                     id="pootle.C015"))
     return errors
 
@@ -381,8 +394,9 @@ def check_settings_markup(app_configs=None, **kwargs):
                     ))
             except ImportError:
                 errors.append(checks.Warning(
-                    _("POOTLE_MARKUP_FILTER is set to '%s' markup, but the "
-                      "package that provides can't be found.", markup_filter),
+                    _("POOTLE_MARKUP_FILTER is set to '{markup}' markup, but "
+                      "the package that provides can't be found.",
+                      {'markup': markup_filter}),
                     hint=_("Install the package or change "
                            "POOTLE_MARKUP_FILTER."),
                     id="pootle.W015",
@@ -395,9 +409,9 @@ def check_settings_markup(app_configs=None, **kwargs):
             ))
         if markup_filter in ('html', 'textile', 'restructuredtext'):
             errors.append(checks.Warning(
-                _("POOTLE_MARKUP_FILTER is using '%s' markup, which is "
+                _("POOTLE_MARKUP_FILTER is using '{markup}' markup, which is "
                   "deprecated and will be removed in future.",
-                  markup_filter),
+                  {'markup': markup_filter}),
                 hint=_("Convert your staticpages to Markdown and set your "
                        "markup to 'markdown'."),
                 id="pootle.W026",
@@ -541,16 +555,15 @@ def check_pootle_fs_working_dir(app_configs=None, **kwargs):
         id="pootle.C019",
     )
     missing_directory_error = checks.Critical(
-        _("Path ('%s') pointed to by POOTLE_FS_WORKING_PATH doesn't exist."
-          % settings.POOTLE_FS_WORKING_PATH),
+        _("Path ('{path}') pointed to by POOTLE_FS_WORKING_PATH doesn't exist.",
+          {'path': settings.POOTLE_FS_WORKING_PATH}),
         hint=_("Create the directory pointed to by `POOTLE_FS_WORKING_PATH`, "
                "or change the setting."),
         id="pootle.C020",
     )
     not_writable_directory_error = checks.Critical(
-        _("Path ('%s') pointed to by POOTLE_FS_WORKING_PATH is not writable by "
-          "Pootle."
-          % settings.POOTLE_FS_WORKING_PATH),
+        _("Path ('{path}') pointed to by POOTLE_FS_WORKING_PATH is not "
+          "writable by Pootle.", {'path': settings.POOTLE_FS_WORKING_PATH}),
         hint=_("Add the write permission to the `POOTLE_FS_WORKING_PATH` "
                "or change the setting."),
         id="pootle.C021",

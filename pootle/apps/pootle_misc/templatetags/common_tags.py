@@ -50,12 +50,12 @@ def progress_bar(total, fuzzy, translated):
         fuzzy_frac = float(fuzzy)/total
         translated_frac = float(translated)/total
         cldrformat = "#,##0.0%"
-    untranslated_display = (_("{percentage} untranslated")).format(
-        percentage=formatter.percent(untranslated_frac, cldrformat))
-    fuzzy_display = (_("{percentage} needs work")).format(
-        percentage=formatter.percent(fuzzy_frac, cldrformat))
-    translated_display = (_("{percentage} translated")).format(
-        percentage=formatter.percent(translated_frac, cldrformat))
+    untranslated_display = _("{percentage} untranslated",
+        {'percentage': formatter.percent(untranslated_frac, cldrformat)})
+    fuzzy_display = _("{percentage} needs work",
+        {'percentage': formatter.percent(fuzzy_frac, cldrformat)})
+    translated_display = _("{percentage} translated",
+        {'percentage': formatter.percent(translated_frac, cldrformat)})
     return dict(
         untranslated_percent_display=untranslated_display,
         fuzzy_percent_display=fuzzy_display,

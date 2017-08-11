@@ -98,7 +98,7 @@ class MultiStringWidget(MultiStringWidgetMixin, forms.MultiWidget):
         output = ''
         for i, widget in enumerate(rendered_widgets):
             output += '<div lang="%s" title="%s">' % \
-                (get_language(), _('Plural Form %d', i))
+                (get_language(), _('Plural Form {number}', {'number': i}))
             output += widget
             output += '</div>'
 
@@ -480,8 +480,8 @@ class SuggestionReviewForm(BaseSuggestionForm):
             self.add_error(
                 "action",
                 forms.ValidationError(
-                    _("Suggestion '%s' has already been accepted or rejected.",
-                      self.target_object)))
+                    _("Suggestion '{suggestion}' has already been accepted or "
+                      "rejected.", {'suggestion': self.target_object})))
         return self.data["action"]
 
     def clean(self):
@@ -568,14 +568,15 @@ class AddSuggestionForm(SubmitFormMixin, forms.Form):
             self.add_error(
                 "target_f",
                 forms.ValidationError(
-                    _("Suggestion '%s' already exists.",
-                      target)))
+                    _("Suggestion '{suggestion}' already exists.",
+                      {'suggestion': target})))
         elif target == self.unit.target:
             self.add_error(
                 "target_f",
                 forms.ValidationError(
-                    _("Suggestion '%s' equals to current unit target value.",
-                      target)))
+                    _("Suggestion '{suggestion}' equals to current unit "
+                      "target value.",
+                      {'suggestion': target})))
         else:
             return self.cleaned_data["target_f"]
 

@@ -99,7 +99,7 @@ class TranslationProjectForm(forms.ModelForm):
                         self.cleaned_data["language"].code))
                 raise forms.ValidationError(
                     _("Cannot create translation project for language "
-                      "'%(lang)s', path '%(path)s' already exists",
+                      "'{lang}', path '{path}' already exists",
                       errordict))
 
     def save(self, response_url, commit=True):

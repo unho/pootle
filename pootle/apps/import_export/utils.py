@@ -35,27 +35,29 @@ logger = logging.getLogger(__name__)
 def import_file(f, user=None):
     ttk = getclass(f)(f.read())
     if not hasattr(ttk, "parseheader"):
-        raise UnsupportedFiletypeError(_("Unsupported filetype '%s', only PO "
-                                         "files are supported at this time\n",
-                                         f.name))
+        raise UnsupportedFiletypeError(
+            _("Unsupported filetype '{filetype}', only PO files are supported "
+              "at this time\n", {'filetype': f.name}))
     header = ttk.parseheader()
     pootle_path = header.get("X-Pootle-Path")
     if not pootle_path:
-        raise MissingPootlePathError(_("File '%s' missing X-Pootle-Path "
-                                       "header\n", f.name))
+        raise MissingPootlePathError(
+            _("File '{filename}' missing X-Pootle-Path header\n",
+              {'filename': f.name}))
 
     rev = header.get("X-Pootle-Revision")
     if not rev or not rev.isdigit():
-        raise MissingPootleRevError(_("File '%s' missing or invalid "
+        raise MissingPootleRevError(_("File '{filename}' missing or invalid "
                                       "X-Pootle-Revision header\n",
-                                      f.name))
+                                      {'filename': f.name}))
     rev = int(rev)
 
     try:
         store = Store.objects.get(pootle_path=pootle_path)
     except Store.DoesNotExist as e:
-        raise FileImportError(_("Could not create '%s'. Missing "
-                                "Project/Language? (%s)", (f.name, e)))
+        raise FileImportError(_("Could not create '{filename}'. Missing "
+                                "Project/Language? ({error})",
+                                {'filename': f.name, 'error': e}))
 
     tp = store.translation_project
     allow_add_and_obsolete = ((tp.project.checkstyle == 'terminology'

@@ -56,7 +56,8 @@ class VirtualFolder(models.Model):
         _('Description'),
         blank=True,
         help_text=_('Use this to provide more information or instructions. '
-                    'Allowed markup: %s', get_markup_filter_display_name()),
+                    'Allowed markup: {markup}',
+                    {'markup': get_markup_filter_display_name()}),
     )
     stores = models.ManyToManyField(
         Store,

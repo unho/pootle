@@ -83,7 +83,7 @@ class SuggestionAcceptedEvent(SuggestionEvent):
     def context(self):
         params = {
             'author': self.user.author_link}
-        sugg_accepted_desc = _(u'Accepted suggestion from %(author)s', params)
+        sugg_accepted_desc = _(u'Accepted suggestion from {author}', params)
 
         if self.comment:
             params.update({
@@ -91,8 +91,7 @@ class SuggestionAcceptedEvent(SuggestionEvent):
                                        self.comment),
             })
             sugg_accepted_desc = _(
-                u'Accepted suggestion from %(author)s '
-                u'with comment: %(comment)s',
+                u'Accepted suggestion from {author} with comment: {comment}',
                 params)
 
         target = self.suggestion.target
@@ -112,7 +111,7 @@ class SuggestionRejectedEvent(SuggestionEvent):
     def context(self):
         params = {
             'author': self.user.author_link}
-        sugg_rejected_desc = _(u'Rejected suggestion from %(author)s', params)
+        sugg_rejected_desc = _(u'Rejected suggestion from {author}', params)
 
         if self.comment:
             params.update({
@@ -120,8 +119,7 @@ class SuggestionRejectedEvent(SuggestionEvent):
                                        self.comment),
             })
             sugg_rejected_desc = _(
-                u'Rejected suggestion from %(author)s '
-                u'with comment: %(comment)s',
+                u'Rejected suggestion from {author} with comment: {comment}',
                 params)
 
         return dict(
@@ -213,7 +211,7 @@ class CheckMutedEvent(CheckEvent):
     def context(self):
         return dict(
             description=format_html(_(
-                u"Muted %(check_name)s check",
+                u"Muted {check_name} check",
                 {'check_name': self.check_link})))
 
 
@@ -222,7 +220,7 @@ class CheckUnmutedEvent(CheckEvent):
     def context(self):
         return dict(
             description=format_html(_(
-                u"Unmuted %(check_name)s check",
+                u"Unmuted {check_name} check",
                 {'check_name': self.check_link})))
 
 
