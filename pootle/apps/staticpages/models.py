@@ -114,7 +114,7 @@ class LegalPage(AbstractPage):
     display_name = _('Legal Page')
 
     def localized_title(self):
-        return _(self.title)
+        return _(self.title)#####
 
     def get_edit_url(self):
         return reverse('pootle-staticpages-edit', args=['legal', self.pk])

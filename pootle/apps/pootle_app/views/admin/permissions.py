@@ -28,7 +28,7 @@ PERMISSIONS = {
 class PermissionFormField(forms.ModelMultipleChoiceField):
 
     def label_from_instance(self, instance):
-        return _(instance.name)
+        return _(instance.name)####
 
 
 def admin_permissions(request, current_directory, template, ctx):
