@@ -23,10 +23,9 @@ def _format_translation(message, variables=None):
     """
     if variables is not None:
         try:
-            return message % variables
+            return message.format(variables)
         except:
             pass
-
     return message
 
 
