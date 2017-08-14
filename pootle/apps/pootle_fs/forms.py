@@ -41,8 +41,7 @@ class ProjectFSAdminForm(forms.Form):
             attrs={'class': 'js-select2'}))
     fs_url = forms.CharField(
         label=_("Backend URL or path"),
-        help_text=_(
-            "The URL or path to your translation files"))
+        help_text=_("The URL or path to your translation files"))
     translation_mapping_presets = forms.ChoiceField(
         label=_("Translation mapping presets"),
         required=False,

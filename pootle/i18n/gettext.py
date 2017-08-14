@@ -44,7 +44,8 @@ def ungettext(singular, plural, number, variables=None):
 
 
 def ngettext(singular, plural, number, variables=None):
-    return _format_translation(_trans.ngettext(singular, plural, number), variables)
+    return _format_translation(_trans.ngettext(singular, plural, number),
+                               variables)
 
 
 gettext_lazy = lazy(gettext, str)
