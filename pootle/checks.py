@@ -571,7 +571,7 @@ def check_mysql_timezones(app_configs=None, **kwargs):
 
     missing_mysql_timezone_tables = checks.Critical(
         _("MySQL requires time zone settings."),
-        hint=("Load the time zone tables "
+        hint=_("Load the time zone tables "
               "http://dev.mysql.com/doc/refman/5.7/en/mysql-tzinfo-to-sql.html"),
         id="pootle.C022",
     )
